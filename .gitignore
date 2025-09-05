@@ -1,0 +1,22 @@
+# 가상환경
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS 관련
+.DS_Store
+Thumbs.db
+
+# IDE 관련 (VSCode 등)
+.vscode/
+.idea/
+
+# 로그 파일
+*.log
+
+# 패키지 설치 파일
+*.egg-info/
+dist/
+build/
