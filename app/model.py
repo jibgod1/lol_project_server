@@ -8,17 +8,26 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import RobustScaler
 from sklearn.metrics import accuracy_score, classification_report
 import joblib
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+os.makedirs(DATA_DIR, exist_ok=True)
+
+
 
 # 1. 데이터 불러오기
 tier = "BRONZE"
 lanes = ["TOP","JUNGLE","MIDDLE","BOTTOM","UTILITY"]
 
 for lane in lanes:
-    conn1 = sqlite3.connect("match_data.db")
+    db_path = os.path.join(DATA_DIR, "match_data.db")
+    conn1 = sqlite3.connect(db_path)
     df = pd.read_sql_query(f"SELECT * FROM match_id_{tier} WHERE teamposition = '{lane}'", conn1)
     conn1.close()
     
-    conn2 = sqlite3.connect("champion_winrate_data.db")
+    winrate_path = os.path.join(DATA_DIR, "champion_winrate_data.db")
+    conn2 = sqlite3.connect(winrate_path)
     winrate_df = pd.read_sql_query(
         f"SELECT * FROM matchup_data WHERE tier = '{tier.lower()}' AND position = '{lane.lower()}'", conn2
     )
@@ -79,8 +88,8 @@ for lane in lanes:
         print(f"{name:<25}: {val:.4f}")
     
     # 9. 저장
-    joblib.dump(model, f'model_{lane.lower()}_{tier}.pkl')
-    joblib.dump(scaler, f'scaler_{lane.lower()}_{tier}.pkl')
+    joblib.dump(model, os.path.join(DATA_DIR, f"model_{lane.lower()}_{tier}.pkl"))
+    joblib.dump(scaler, os.path.join(DATA_DIR, f"scaler_{lane.lower()}_{tier}.pkl"))
 
 
 # %%

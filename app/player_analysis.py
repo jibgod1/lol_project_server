@@ -8,6 +8,11 @@ import config
 import get_match_id
 import game_info
 import get_player_puuid
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+
 
 def ingame_players_id(puuid):
     api_key = config.API_KEY
@@ -737,8 +742,12 @@ def create_comment(blue_result, red_result, tier, team):
                     "team_Dragon_kills", "team_Horde_kills", "team_riftHerald_kills", "team_Baron_kills", "team_ElderDragon_kills", "team_Atakhan_kills"}
 
     def winrate_calc(result, tier):
-        model = joblib.load(f"model_{result['player']['lane']}_{tier}.pkl") 
-        scaler = joblib.load(f"scaler_{result['player']['lane']}_{tier}.pkl")
+
+        model_path = os.path.join(DATA_DIR, f"model_{result['player']['lane']}_{tier}.pkl")
+        scaler_path = os.path.join(DATA_DIR, f"scaler_{result['player']['lane']}_{tier}.pkl")
+
+        model = joblib.load(model_path) 
+        scaler = joblib.load(scaler_path)
     
         # 모델 입력값 준비
         model_input_dict = {k: v for k, v in result.items() if k not in exclude_keys}
@@ -1027,9 +1036,9 @@ players[7]["lane"] = "BOTTOM"
 players[8]["lane"] = "UTILITY"
 players[9]["lane"] = "TOP"
 for i, p in enumerate(players):
-        if p["puuid"] == puuid:
-            team = "blue" if i <= 4 else "red"
-            break
+    if p["puuid"] == puuid:
+        team = "blue" if i <= 4 else "red"
+        break
 current_players = players.copy()
 
 blue_team = current_players[:5]
@@ -1058,6 +1067,3 @@ print(team)
 game_analysis(players, "MIDDLE", "BRONZE", team)
 
 # %%
-
-
-
