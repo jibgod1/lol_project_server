@@ -1,5 +1,5 @@
 # %%
-API_KEY = "RGAPI-a99ce466-2362-4a12-ac6d-e1e3217ed4c3"  # 여기에 실제 Riot API 키를 입력하세요.
+API_KEY = "RGAPI-df48b0cc-302d-4db9-a17f-e0c9f6a02761"  # 여기에 실제 Riot API 키를 입력하세요.
 
 # %%
 

@@ -919,15 +919,9 @@ def create_comment(blue_result, red_result, tier, team):
     print(red_feedback)
     print(comparisons)
     print(winrate)
-    return {
-        "blue": {
-            "player": blue_result['player'],
-            "feedback": blue_feedback
-        },
-        "red": {
-            "player": red_result['player'],
-            "feedback": red_feedback
-        },
+    return{
+        "blue": {"player": blue_result['player'], "feedback": blue_feedback},
+        "red": {"player": red_result['player'], "feedback": red_feedback},
         "comparisons": comparisons,
         "winrate": winrate
     }
@@ -1009,6 +1003,7 @@ def game_analysis(players, lane, tier, team):
             comment = create_comment(prev_result, avg_result, tier, team)
             print(comment)
             prev_result = None
+            yield comment
         
 
 
