@@ -1,5 +1,12 @@
-# %%
-API_KEY = "RGAPI-df48b0cc-302d-4db9-a17f-e0c9f6a02761"  # 여기에 실제 Riot API 키를 입력하세요.
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+API_KEY = os.getenv("API_KEY")
+
+if not API_KEY:
+    raise ValueError("⚠️ Riot API Key가 설정되지 않았습니다. .env 파일을 확인하세요.")
 
 # %%
 
