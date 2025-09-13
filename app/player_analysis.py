@@ -743,8 +743,8 @@ def create_comment(blue_result, red_result, tier, team):
 
     def winrate_calc(result, tier):
 
-        model_path = os.path.join(DATA_DIR, f"model_{result['player']['lane']}_{tier}.pkl")
-        scaler_path = os.path.join(DATA_DIR, f"scaler_{result['player']['lane']}_{tier}.pkl")
+        model_path = os.path.join(DATA_DIR, f"model_{result['player']['lane'].lower()}_{tier}.pkl")
+        scaler_path = os.path.join(DATA_DIR, f"scaler_{result['player']['lane'].lower()}_{tier}.pkl")
 
         model = joblib.load(model_path) 
         scaler = joblib.load(scaler_path)
@@ -1059,6 +1059,7 @@ players = blue_sorted + red_sorted
 print(players)
 print(team)
 
-game_analysis(players, "MIDDLE", "BRONZE", team)
+for r in game_analysis(players, "MIDDLE", "BRONZE", team):
+    print(r)
 
 # %%
