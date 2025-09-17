@@ -23,7 +23,6 @@ def root():
 
 @app.post("/analysis")
 def root(req: AnalysisRequest):
-    req = json.dump(req)
     comment = player_analysis.create_comment(
         req.prev_result,
         req.avg_result,
