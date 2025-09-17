@@ -899,14 +899,20 @@ def create_comment(blue_result, red_result, tier, team):
             comparisons['lane_cs_result_10min'].append("라인전 중반 유의미한 cs차이를 낼 확률이 높습니다.")
         elif blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] > 0.2:
             comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 밀릴 확률이 높습니다.")
+        else:
+            comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 비슷할 확률이 높습니다.")
         if blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] < -0.2:
             comparisons['lane_gold_result_10min'].append("라인전 중반 유의미한 골드차이를 낼 확률이 높습니다.")
         elif blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] > 0.2:
             comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 밀릴 확률이 높습니다.")
+        else:
+            comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 비슷할 확률이 높습니다.")
         if blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] < -0.2:
             comparisons['midgame_gold_result'].append("게임 중반 유의미한 골드차이를 낼 확률이 높습니다.")
         elif blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] > 0.2:
             comparisons['midgame_gold_result'].append("게임 중반 골드가 밀릴 확률이 높습니다.")
+        else:
+            comparisons['midgame_gold_result'].append("게임 중반 골드가 비슷할 확률이 높습니다.")
         comparisons['jungle'].append(f"최근 10게임 라인전 중 갱으로 {red_result['opp_jungle']}번 사망했습니다."
                                      f"최근 10게임 상대방 라이너는 갱으로 {blue_result['my_jungle']}번 킬을 했습니다.")
         comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {blue_result['TOP'][0]}킬을 기록하고 {blue_result['TOP'][1]}데스를 기록했습니다.")
@@ -998,18 +1004,24 @@ def game_analysis(players, lane, tier, team):
         avg_result['not_enough_matches'] = len(match_id_list) < 10
         if prev_result is None:
             prev_result = avg_result
+# 여기랑 game_info 수집하는 코드 변경 필요
         else:
             # 두 명(같은 라인) 정보 넘겨줌
+            # return {
+            #     "prev_result": prev_result,
+            #     "avg_result": avg_result,
+            #     "tier": tier,
+            #     "team": team
+            # }
             comment = create_comment(prev_result, avg_result, tier, team)
             print(comment)
             prev_result = None
-            yield comment
         
 
 
 
 puuid = get_player_puuid.get_player_puuid("정유영", "KR2")
-#players = ingame_players_id(puuid)
+players = ingame_players_id(puuid)
 players = [{'riotId': '파 멸#혼란폭력', 'puuid': '0dK3NbFT-MTqNxGMMa5Bvf1wQ64LXkrjMCw_cd84oc5tCtScbfRrS9jKEdoqjj96F9f7nkPWCVwixQ', 'lane': 'TOP'}, 
            {'riotId': '이 드#kr0', 'puuid': '08eWvcrlhvPV9E3EY54D0OkUhPl8mdabGMLM0HYUqBtYxJdtOv8HYC3KD-8QFecJxeyBWPlSluWfUg', 'lane': 'JUNGLE'}, 
            {'riotId': '조맹맹맹맹#4545', 'puuid': 'RgA1dDKbM7SXFirQWWKwvidVtq5L6sH681UDXtruO5qDkEGRfki_brVP58yJrqKz-WJJD9PFguRhDA', 'lane': 'MIDDLE'}, 
@@ -1058,8 +1070,8 @@ for lane in order:
 players = blue_sorted + red_sorted
 print(players)
 print(team)
-
-for r in game_analysis(players, "MIDDLE", "BRONZE", team):
-    print(r)
+print(game_analysis(players, "MIDDLE", "BRONZE", team))
+# for r in game_analysis(players, "MIDDLE", "BRONZE", team):
+#     print(r)
 
 # %%

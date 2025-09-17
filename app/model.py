@@ -17,7 +17,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 
 
 # 1. 데이터 불러오기
-tier = "BRONZE"
+tier = "GOLD"
 lanes = ["TOP","JUNGLE","MIDDLE","BOTTOM","UTILITY"]
 
 for lane in lanes:
