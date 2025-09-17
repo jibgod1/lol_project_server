@@ -873,7 +873,7 @@ def create_comment(blue_result, red_result, tier, team):
             comparisons['midgame_gold_result'].append("게임 중반 골드가 밀릴 확률이 높습니다.")
         comparisons['jungle'].append(f"최근 10게임 라인전 중 갱으로 {blue_result['opp_jungle']}번 사망했습니다.\n"
                                      f"최근 10게임 상대방 라이너는 갱으로 {red_result['my_jungle']}번 킬을 했습니다.")
-        comparisons['TOP'].appendd(f"상대 라이너는 탑에서 평균 {red_result['TOP'][0]}킬을 기록하고 {red_result['TOP'][1]}데스를 기록했습니다.")
+        comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {red_result['TOP'][0]}킬을 기록하고 {red_result['TOP'][1]}데스를 기록했습니다.")
         comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {red_result['MID'][0]}킬을 기록하고 {red_result['MID'][1]}데스를 기록했습니다.")
         comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {red_result['BOT'][0]}킬을 기록하고 {red_result['BOT'][1]}데스를 기록했습니다.")
         comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {red_result['OTHER'][0]}킬을 기록하고 {red_result['OTHER'][1]}데스를 기록했습니다.")
