@@ -858,19 +858,25 @@ def create_comment(blue_result, red_result, tier, team):
         elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] < -0.2:
             comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 불리한 확률이 높습니다.")
         else:
-            comparisons['early_trade_result_3min'].append("라인전 중반 비등비등할 확률이 높습니다.")
+            comparisons['early_trade_result_8min'].append("라인전 중반 비등비등할 확률이 높습니다.")
         if blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] > 0.2:
             comparisons['lane_cs_result_10min'].append("라인전 중반 유의미한 cs차이를 낼 확률이 높습니다.")
         elif blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] < -0.2:
             comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 밀릴 확률이 높습니다.")
+        else:
+            comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 비슷할 확률이 높습니다.")
         if blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] > 0.2:
             comparisons['lane_gold_result_10min'].append("라인전 중반 유의미한 골드차이를 낼 확률이 높습니다.")
         elif blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] < -0.2:
             comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 밀릴 확률이 높습니다.")
+        else:
+            comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 비슷할 확률이 높습니다.")
         if blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] > 0.2:
             comparisons['midgame_gold_result'].append("게임 중반 유의미한 골드차이를 낼 확률이 높습니다.")
         elif blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] < -0.2:
             comparisons['midgame_gold_result'].append("게임 중반 골드가 밀릴 확률이 높습니다.")
+        else:
+            comparisons['midgame_gold_result'].append("게임 중반 골드가 비슷할 확률이 높습니다.")
         comparisons['jungle'].append(f"최근 10게임 라인전 중 갱으로 {blue_result['opp_jungle']}번 사망했습니다.\n"
                                      f"최근 10게임 상대방 라이너는 갱으로 {red_result['my_jungle']}번 킬을 했습니다.")
         comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {red_result['TOP'][0]}킬을 기록하고 {red_result['TOP'][1]}데스를 기록했습니다.")
@@ -894,7 +900,7 @@ def create_comment(blue_result, red_result, tier, team):
         elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] > 0.2:
             comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 불리한 확률이 높습니다.")
         else:
-            comparisons['early_trade_result_3min'].append("라인전 중반 비등비등할 확률이 높습니다.")
+            comparisons['early_trade_result_8min'].append("라인전 중반 비등비등할 확률이 높습니다.")
         if blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] < -0.2:
             comparisons['lane_cs_result_10min'].append("라인전 중반 유의미한 cs차이를 낼 확률이 높습니다.")
         elif blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] > 0.2:
