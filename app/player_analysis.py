@@ -832,9 +832,9 @@ def create_comment(blue_result, red_result, tier, team):
 
     # 🔹 블루/레드 팀 결과 비교 및 리턴
     if blue_result["player"]["lane"] not in ("JUNGLE", "UTILITY"):
-        if blue_result["player"]["not_enough_mathes"] == True:
+        if blue_result["not_enough_matches"] == True:
             blue_result["player"]["riotId"] = blue_result["player"]["riotId"] + "(정보 부족)"
-        if red_result["player"]["not_enough_mathes"] == True:
+        if red_result["not_enough_matches"] == True:
             red_result["player"]["riotId"] = red_result["player"]["riotId"] + "(정보 부족)"
         comparisons = {
             "early_trade_result_3min":[],
@@ -943,9 +943,9 @@ def create_comment(blue_result, red_result, tier, team):
             "winrate": winrate
         }
     else:
-        if blue_result["player"]["not_enough_mathes"] == True:
+        if blue_result["not_enough_matches"] == True:
             blue_result["player"]["riotId"] = blue_result["player"]["riotId"] + "(정보 부족)"
-        if red_result["player"]["not_enough_mathes"] == True:
+        if red_result['not_enough_matches'] == True:
             red_result["player"]["riotId"] = red_result["player"]["riotId"] + "(정보 부족)"
         comparisons = {
             "Enemy Area":[], "My Area":[],
