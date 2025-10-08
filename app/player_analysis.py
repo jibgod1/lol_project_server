@@ -737,7 +737,7 @@ def create_comment(blue_result, red_result, tier, team):
                     "early_trade_result_3min", "early_trade_result_8min", "need_recall_8min",
                     "lane_cs_diff_10min", "lane_cs_result_10min", "gold_diff_10min", "lane_gold_result_10min", 
                     "gold_diff_14min", "midgame_gold_result",
-                    "my_jungle", "opp_jungle", "TOP", "MID", "BOT", "OTHER",
+                    "my_jungle", "opp_jungle", "enemy_jungle", "top_jungle", "bot_jungle", "TOP", "MID", "BOT", "OTHER",
                     "kills", "deaths", "assists", "early_kills", "early_deaths", "early_assists", "lane_cs", "kill_participation", "turret_damage",
                     "team_Dragon_kills", "team_Horde_kills", "team_riftHerald_kills", "team_Baron_kills", "team_ElderDragon_kills", "team_Atakhan_kills"}
 
@@ -831,112 +831,139 @@ def create_comment(blue_result, red_result, tier, team):
         }
 
     # 🔹 블루/레드 팀 결과 비교 및 리턴
-    comparisons = {
-        "early_trade_result_3min":[],
-        "early_trade_result_8min":[], 
-        "need_recall_8min":[],
-        "lane_cs_result_10min":[], 
-        "lane_gold_result_10min":[], 
-        "midgame_gold_result":[],
-        "jungle":[], 
-        "TOP":[], "MID":[], "BOT":[], "OTHER":[],
-    }
-    winrate = 0 
-    if team == "blue":
-        blue_feedback = winrate_calc(blue_result, tier)
-        red_feedback = winrate_calc(red_result, tier)
-        if blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] > 0.2:
-            comparisons['early_trade_result_3min'].append("라인전 초반 딜교에서 우위를 가져갈 확률이 높습니다.")
-        elif blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] < -0.2:
-            comparisons['early_trade_result_3min'].append("라인전 초반 딜교에서 불리한 확률이 높습니다.")
+    if blue_result["teamposition"] not in ("JUNGLE", "UTILITY"):
+        comparisons = {
+            "early_trade_result_3min":[],
+            "early_trade_result_8min":[], 
+            "need_recall_8min":[],
+            "lane_cs_result_10min":[], 
+            "lane_gold_result_10min":[], 
+            "midgame_gold_result":[],
+            "jungle":[], 
+            "TOP":[], "MID":[], "BOT":[], "OTHER":[],
+        }
+        winrate = 0 
+        if team == "blue":
+            blue_feedback = winrate_calc(blue_result, tier)
+            red_feedback = winrate_calc(red_result, tier)
+            if blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] > 0.2:
+                comparisons['early_trade_result_3min'].append("라인전 초반 딜교에서 우위를 가져갈 확률이 높습니다.")
+            elif blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] < -0.2:
+                comparisons['early_trade_result_3min'].append("라인전 초반 딜교에서 불리한 확률이 높습니다.")
+            else:
+                comparisons['early_trade_result_3min'].append("라인전 초반 비등비등할 확률이 높습니다.")
+            if blue_result['need_recall_8min'] < 0.5:
+                comparisons['need_recall_8min'].append("8분 오브젝트 타이밍에 정비 혹은 체력 관리가 필요해보입니다.")
+            elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] > 0.2:
+                comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 우위를 가져갈 확률이 높습니다.")
+            elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] < -0.2:
+                comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 불리한 확률이 높습니다.")
+            else:
+                comparisons['early_trade_result_8min'].append("라인전 중반 비등비등할 확률이 높습니다.")
+            if blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] > 0.2:
+                comparisons['lane_cs_result_10min'].append("라인전 중반 유의미한 cs차이를 낼 확률이 높습니다.")
+            elif blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] < -0.2:
+                comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 밀릴 확률이 높습니다.")
+            else:
+                comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 비슷할 확률이 높습니다.")
+            if blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] > 0.2:
+                comparisons['lane_gold_result_10min'].append("라인전 중반 유의미한 골드차이를 낼 확률이 높습니다.")
+            elif blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] < -0.2:
+                comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 밀릴 확률이 높습니다.")
+            else:
+                comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 비슷할 확률이 높습니다.")
+            if blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] > 0.2:
+                comparisons['midgame_gold_result'].append("게임 중반 유의미한 골드차이를 낼 확률이 높습니다.")
+            elif blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] < -0.2:
+                comparisons['midgame_gold_result'].append("게임 중반 골드가 밀릴 확률이 높습니다.")
+            else:
+                comparisons['midgame_gold_result'].append("게임 중반 골드가 비슷할 확률이 높습니다.")
+            comparisons['jungle'].append(f"최근 10게임 라인전 중 갱으로 {blue_result['opp_jungle']}번 사망했습니다.\n"
+                                        f"최근 10게임 상대방 라이너는 갱으로 {red_result['my_jungle']}번 킬을 했습니다.")
+            comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {red_result['TOP'][0]}킬을 기록하고 {red_result['TOP'][1]}데스를 기록했습니다.")
+            comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {red_result['MID'][0]}킬을 기록하고 {red_result['MID'][1]}데스를 기록했습니다.")
+            comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {red_result['BOT'][0]}킬을 기록하고 {red_result['BOT'][1]}데스를 기록했습니다.")
+            comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {red_result['OTHER'][0]}킬을 기록하고 {red_result['OTHER'][1]}데스를 기록했습니다.")
+            winrate = blue_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
         else:
-            comparisons['early_trade_result_3min'].append("라인전 초반 비등비등할 확률이 높습니다.")
-        if blue_result['need_recall_8min'] < 0.5:
-            comparisons['need_recall_8min'].append("8분 오브젝트 타이밍에 정비 혹은 체력 관리가 필요해보입니다.")
-        elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] > 0.2:
-            comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 우위를 가져갈 확률이 높습니다.")
-        elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] < -0.2:
-            comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 불리한 확률이 높습니다.")
-        else:
-            comparisons['early_trade_result_8min'].append("라인전 중반 비등비등할 확률이 높습니다.")
-        if blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] > 0.2:
-            comparisons['lane_cs_result_10min'].append("라인전 중반 유의미한 cs차이를 낼 확률이 높습니다.")
-        elif blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] < -0.2:
-            comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 밀릴 확률이 높습니다.")
-        else:
-            comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 비슷할 확률이 높습니다.")
-        if blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] > 0.2:
-            comparisons['lane_gold_result_10min'].append("라인전 중반 유의미한 골드차이를 낼 확률이 높습니다.")
-        elif blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] < -0.2:
-            comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 밀릴 확률이 높습니다.")
-        else:
-            comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 비슷할 확률이 높습니다.")
-        if blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] > 0.2:
-            comparisons['midgame_gold_result'].append("게임 중반 유의미한 골드차이를 낼 확률이 높습니다.")
-        elif blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] < -0.2:
-            comparisons['midgame_gold_result'].append("게임 중반 골드가 밀릴 확률이 높습니다.")
-        else:
-            comparisons['midgame_gold_result'].append("게임 중반 골드가 비슷할 확률이 높습니다.")
-        comparisons['jungle'].append(f"최근 10게임 라인전 중 갱으로 {blue_result['opp_jungle']}번 사망했습니다.\n"
-                                     f"최근 10게임 상대방 라이너는 갱으로 {red_result['my_jungle']}번 킬을 했습니다.")
-        comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {red_result['TOP'][0]}킬을 기록하고 {red_result['TOP'][1]}데스를 기록했습니다.")
-        comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {red_result['MID'][0]}킬을 기록하고 {red_result['MID'][1]}데스를 기록했습니다.")
-        comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {red_result['BOT'][0]}킬을 기록하고 {red_result['BOT'][1]}데스를 기록했습니다.")
-        comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {red_result['OTHER'][0]}킬을 기록하고 {red_result['OTHER'][1]}데스를 기록했습니다.")
-        winrate = blue_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
+            red_feedback = winrate_calc(red_result, tier)
+            blue_feedback = winrate_calc(blue_result, tier)
+            if blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] < -0.2:
+                comparisons['early_trade_result_3min'].append("라인전 초반 딜교에서 우위를 가져갈 확률이 높습니다.")
+            elif blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] > 0.2:
+                comparisons['early_trade_result_3min'].append("라인전 초반 딜교에서 불리한 확률이 높습니다.")
+            else:
+                comparisons['early_trade_result_3min'].append("라인전 초반 비등비등할 확률이 높습니다.")
+            if blue_result['need_recall_8min'] < 0.5:
+                comparisons['need_recall_8min'].append("8분 오브젝트 타이밍 이전에 정비가 필요해보입니다.")
+            elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] < -0.2:
+                comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 우위를 가져갈 확률이 높습니다.")
+            elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] > 0.2:
+                comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 불리한 확률이 높습니다.")
+            else:
+                comparisons['early_trade_result_8min'].append("라인전 중반 비등비등할 확률이 높습니다.")
+            if blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] < -0.2:
+                comparisons['lane_cs_result_10min'].append("라인전 중반 유의미한 cs차이를 낼 확률이 높습니다.")
+            elif blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] > 0.2:
+                comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 밀릴 확률이 높습니다.")
+            else:
+                comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 비슷할 확률이 높습니다.")
+            if blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] < -0.2:
+                comparisons['lane_gold_result_10min'].append("라인전 중반 유의미한 골드차이를 낼 확률이 높습니다.")
+            elif blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] > 0.2:
+                comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 밀릴 확률이 높습니다.")
+            else:
+                comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 비슷할 확률이 높습니다.")
+            if blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] < -0.2:
+                comparisons['midgame_gold_result'].append("게임 중반 유의미한 골드차이를 낼 확률이 높습니다.")
+            elif blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] > 0.2:
+                comparisons['midgame_gold_result'].append("게임 중반 골드가 밀릴 확률이 높습니다.")
+            else:
+                comparisons['midgame_gold_result'].append("게임 중반 골드가 비슷할 확률이 높습니다.")
+            comparisons['jungle'].append(f"최근 10게임 라인전 중 갱으로 {red_result['opp_jungle']}번 사망했습니다."
+                                        f"최근 10게임 상대방 라이너는 갱으로 {blue_result['my_jungle']}번 킬을 했습니다.")
+            comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {blue_result['TOP'][0]}킬을 기록하고 {blue_result['TOP'][1]}데스를 기록했습니다.")
+            comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {blue_result['MID'][0]}킬을 기록하고 {blue_result['MID'][1]}데스를 기록했습니다.")
+            comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {blue_result['BOT'][0]}킬을 기록하고 {blue_result['BOT'][1]}데스를 기록했습니다.")
+            comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {blue_result['OTHER'][0]}킬을 기록하고 {blue_result['OTHER'][1]}데스를 기록했습니다.")
+            winrate = red_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
+            
+        print(blue_feedback)
+        print(red_feedback)
+        print(comparisons)
+        print(winrate)
+        return{
+            "blue": {"player": blue_result['player'], "feedback": blue_feedback},
+            "red": {"player": red_result['player'], "feedback": red_feedback},
+            "comparisons": comparisons,
+            "winrate": winrate
+        }
     else:
-        red_feedback = winrate_calc(red_result, tier)
-        blue_feedback = winrate_calc(blue_result, tier)
-        if blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] < -0.2:
-            comparisons['early_trade_result_3min'].append("라인전 초반 딜교에서 우위를 가져갈 확률이 높습니다.")
-        elif blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] > 0.2:
-            comparisons['early_trade_result_3min'].append("라인전 초반 딜교에서 불리한 확률이 높습니다.")
+        comparisons = {
+            "enemy_jungle":[], "top_jungle":[], "bot_jungle":[],
+            "TOP":[], "MID":[], "BOT":[], "OTHER":[],
+        }
+        winrate = 0 
+        if team == "blue":
+            blue_feedback = winrate_calc(blue_result, tier)
+            red_feedback = winrate_calc(red_result, tier)
+            print("테스트테스트테스트 블루")
+            return{
+                "blue": {"player": blue_result['player'], "feedback": blue_feedback},
+                "red": {"player": red_result['player'], "feedback": red_feedback},
+                "comparisons": comparisons,
+                "winrate": winrate
+            }
         else:
-            comparisons['early_trade_result_3min'].append("라인전 초반 비등비등할 확률이 높습니다.")
-        if blue_result['need_recall_8min'] < 0.5:
-            comparisons['need_recall_8min'].append("8분 오브젝트 타이밍 이전에 정비가 필요해보입니다.")
-        elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] < -0.2:
-            comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 우위를 가져갈 확률이 높습니다.")
-        elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] > 0.2:
-            comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 불리한 확률이 높습니다.")
-        else:
-            comparisons['early_trade_result_8min'].append("라인전 중반 비등비등할 확률이 높습니다.")
-        if blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] < -0.2:
-            comparisons['lane_cs_result_10min'].append("라인전 중반 유의미한 cs차이를 낼 확률이 높습니다.")
-        elif blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] > 0.2:
-            comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 밀릴 확률이 높습니다.")
-        else:
-            comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 비슷할 확률이 높습니다.")
-        if blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] < -0.2:
-            comparisons['lane_gold_result_10min'].append("라인전 중반 유의미한 골드차이를 낼 확률이 높습니다.")
-        elif blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] > 0.2:
-            comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 밀릴 확률이 높습니다.")
-        else:
-            comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 비슷할 확률이 높습니다.")
-        if blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] < -0.2:
-            comparisons['midgame_gold_result'].append("게임 중반 유의미한 골드차이를 낼 확률이 높습니다.")
-        elif blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] > 0.2:
-            comparisons['midgame_gold_result'].append("게임 중반 골드가 밀릴 확률이 높습니다.")
-        else:
-            comparisons['midgame_gold_result'].append("게임 중반 골드가 비슷할 확률이 높습니다.")
-        comparisons['jungle'].append(f"최근 10게임 라인전 중 갱으로 {red_result['opp_jungle']}번 사망했습니다."
-                                     f"최근 10게임 상대방 라이너는 갱으로 {blue_result['my_jungle']}번 킬을 했습니다.")
-        comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {blue_result['TOP'][0]}킬을 기록하고 {blue_result['TOP'][1]}데스를 기록했습니다.")
-        comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {blue_result['MID'][0]}킬을 기록하고 {blue_result['MID'][1]}데스를 기록했습니다.")
-        comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {blue_result['BOT'][0]}킬을 기록하고 {blue_result['BOT'][1]}데스를 기록했습니다.")
-        comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {blue_result['OTHER'][0]}킬을 기록하고 {blue_result['OTHER'][1]}데스를 기록했습니다.")
-        winrate = red_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
-        
-    print(blue_feedback)
-    print(red_feedback)
-    print(comparisons)
-    print(winrate)
-    return{
-        "blue": {"player": blue_result['player'], "feedback": blue_feedback},
-        "red": {"player": red_result['player'], "feedback": red_feedback},
-        "comparisons": comparisons,
-        "winrate": winrate
-    }
+            red_feedback = winrate_calc(red_result, tier)
+            blue_feedback = winrate_calc(blue_result, tier)
+            print("테스트테스트테스트 레드")
+            return{
+                "blue": {"player": blue_result['player'], "feedback": blue_feedback},
+                "red": {"player": red_result['player'], "feedback": red_feedback},
+                "comparisons": comparisons,
+                "winrate": winrate
+            }
 
         
 
