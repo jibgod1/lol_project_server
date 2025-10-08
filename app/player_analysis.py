@@ -940,7 +940,7 @@ def create_comment(blue_result, red_result, tier, team):
         }
     else:
         comparisons = {
-            "enemy_jungleutil":[], "my_jungleutil":[],
+            "Enemy Area":[], "My Area":[],
             "TOP":[], "MID":[], "BOT":[], "OTHER":[],
         }
         winrate = 0 
@@ -948,11 +948,17 @@ def create_comment(blue_result, red_result, tier, team):
             blue_feedback = winrate_calc(blue_result, tier)
             red_feedback = winrate_calc(red_result, tier)
             if red_result["top_jungle"]>red_result["bot_jungle"]:
-                comparisons['enemy_jungleutil'].append(f"상대방은 탑에서 평균 {red_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 탑쪽 정글에서 활동합니다.")
+                comparisons['Enemy Area'].append(f"상대방은 평균 {red_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 탑쪽 정글에서 활동합니다.")
             elif red_result["top_jungle"]<red_result["bot_jungle"]:
-                comparisons['enemy_jungleutil'].append(f"상대방은 탑에서 평균 {red_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 바텀쪽 정글에서 활동합니다.")
+                comparisons['Enemy Area'].append(f"상대방은 평균 {red_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 바텀쪽 정글에서 활동합니다.")
             else:
-                comparisons['enemy_jungleutil'].append(f"상대방은 탑에서 평균 {red_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 탑과 바텀 모두를 돌아다닙니다.")
+                comparisons['Enemy Area'].append(f"상대방은 평균 {red_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 탑과 바텀 모두를 돌아다닙니다.")
+            if blue_result["top_jungle"]>blue_result["bot_jungle"]:
+                comparisons['My Area'].append(f"아군은 평균 {blue_result['enemy_jungle']}번 상대 정글에 들어갔고 주로 탑쪽 정글에서 활동합니다.")
+            elif blue_result["top_jungle"]<blue_result["bot_jungle"]:
+                comparisons['My Area'].append(f"아군은 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어갔고 주로 바텀쪽 정글에서 활동합니다.")
+            else:
+                comparisons['My Area'].append(f"아군은 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어갔고 탑과 바텀 모두를 돌아다닙니다.")
             comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {red_result['TOP'][0]}킬을 기록하고 {red_result['TOP'][1]}데스를 기록했습니다.")
             comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {red_result['MID'][0]}킬을 기록하고 {red_result['MID'][1]}데스를 기록했습니다.")
             comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {red_result['BOT'][0]}킬을 기록하고 {red_result['BOT'][1]}데스를 기록했습니다.")
@@ -968,11 +974,17 @@ def create_comment(blue_result, red_result, tier, team):
             red_feedback = winrate_calc(red_result, tier)
             blue_feedback = winrate_calc(blue_result, tier)
             if blue_result["top_jungle"]>blue_result["bot_jungle"]:
-                comparisons['enemy_jungleutil'].append(f"상대방은 탑에서 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 탑쪽 정글에서 활동합니다.")
+                comparisons['Enemy Area'].append(f"상대방은 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 탑쪽 정글에서 활동합니다.")
             elif blue_result["top_jungle"]<blue_result["bot_jungle"]:
-                comparisons['enemy_jungleutil'].append(f"상대방은 탑에서 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 바텀쪽 정글에서 활동합니다.")
+                comparisons['Enemy Area'].append(f"상대방은 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 바텀쪽 정글에서 활동합니다.")
             else:
-                comparisons['enemy_jungleutil'].append(f"상대방은 탑에서 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 탑과 바텀 모두를 돌아다닙니다.")
+                comparisons['Enemy Area'].append(f"상대방은 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 탑과 바텀 모두를 돌아다닙니다.")
+            if red_result["top_jungle"]>red_result["bot_jungle"]:
+                comparisons['My Area'].append(f"아군은 평균 {red_result['enemy_jungle']}번 우리 정글에 들어갔고 주로 탑쪽 정글에서 활동합니다.")
+            elif red_result["top_jungle"]<red_result["bot_jungle"]:
+                comparisons['My Area'].append(f"아군은 평균 {red_result['enemy_jungle']}번 우리 정글에 들어갔고 주로 바텀쪽 정글에서 활동합니다.")
+            else:
+                comparisons['My Area'].append(f"아군은 평균 {red_result['enemy_jungle']}번 우리 정글에 들어갔고 주로 탑과 바텀 모두를 돌아다닙니다.")
             comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {blue_result['TOP'][0]}킬을 기록하고 {blue_result['TOP'][1]}데스를 기록했습니다.")
             comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {blue_result['MID'][0]}킬을 기록하고 {blue_result['MID'][1]}데스를 기록했습니다.")
             comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {blue_result['BOT'][0]}킬을 기록하고 {blue_result['BOT'][1]}데스를 기록했습니다.")
