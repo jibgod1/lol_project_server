@@ -368,7 +368,7 @@ def generate_feedback(positive, negative, below_avg):
             if coef > 0:
                 feedback["positive"].append("라인전에서 킬 우위를 점할때가 많습니다.")
             else:
-                feedback["positive"].append("킬 양보를 통해 이득을 보는 경우가 많습니다.")
+                feedback["positive"].append("팀원의 성장을 위해 킬을 양보했습니다.")
         elif f == "diff_early_d":
             if coef > 0:
                 feedback["positive"].append("추반 적절한 희생으로 팀원대신 사망하여 팀원의 성장을 도왔습니다.")
@@ -498,7 +498,7 @@ def generate_feedback(positive, negative, below_avg):
             if coef > 0:
                 feedback["negative"].append("초반 교전 참여율이 낮습니다. 로밍이나 정글을 적극적으로 도와봅시다.")
             else:
-                feedback["negative"].append("교전 참여율, 혹은 킬 양보가 많습니다. 과한 싸움, 혹은 양보는 라인전에 불리한 영향을 미칠 수 있습니다.")
+                feedback["negative"].append("킬 양보가 과도하여 본인 성장이 늦어졌습니다.")
         elif f == "diff_lane_cs":
             if coef > 0:
                 feedback["negative"].append("라인전 cs차이가 많이납니다. 불리하더라고 라인관리를 통해 최대한 cs를 챙기도록 합시다.")
@@ -568,7 +568,7 @@ def generate_feedback(positive, negative, below_avg):
             if coef > 0:
                 feedback["negative"].append("바론 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.")
             else:
-                feedback["negative"].append("바론 오브젝트 타이밍에 죽는 경우가 많습니다. 바론 오브젝트 타이밍에 안정적으로 플레이하도록 합시다.")
+                feedback["negative"].append("바론 오브젝트 타이밍에 죽는 경우가 많습니다. 사이드 운영이나 시야 체크를 안정적으로 하도록 합시다.")
         elif f == "riftherald_participation":
             if coef > 0:
                 feedback["negative"].append("전령 오브젝트 참여율이 낮습니다. 가능하다면 전령 오브젝트 싸움에 참가하도록 합시다.")
@@ -598,7 +598,7 @@ def generate_feedback(positive, negative, below_avg):
             if coef > 0:
                 feedback["negative"].append("아타칸 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.")
             else:
-                feedback["negative"].append("아타칸 오브젝트 타이밍에 죽는 경우가 많습니다. 아타칸 오브젝트 타이밍에 안정적으로 플레이하도록 합시다.")
+                feedback["negative"].append("아타칸 오브젝트 타이밍에 죽는 경우가 많습니다. 사이드 운영이나 시야 체크를 안정적으로 하도록 합시다.")
 
     # below_avg 피드백
     for feat in below_avg:
@@ -852,7 +852,7 @@ def create_comment(blue_result, red_result, tier, team):
         else:
             comparisons['early_trade_result_3min'].append("라인전 초반 비등비등할 확률이 높습니다.")
         if blue_result['need_recall_8min'] < 0.5:
-            comparisons['need_recall_8min'].append("8분 오브젝트 타이밍 이전에 정비가 필요해보입니다.")
+            comparisons['need_recall_8min'].append("8분 오브젝트 타이밍에 정비 혹은 체력 관리가 필요해보입니다.")
         elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] > 0.2:
             comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 우위를 가져갈 확률이 높습니다.")
         elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] < -0.2:
