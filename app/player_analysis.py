@@ -831,7 +831,7 @@ def create_comment(blue_result, red_result, tier, team):
         }
 
     # 🔹 블루/레드 팀 결과 비교 및 리턴
-    if blue_result["teamposition"] not in ("JUNGLE", "UTILITY"):
+    if blue_result["player"]["lane"] not in ("JUNGLE", "UTILITY"):
         comparisons = {
             "early_trade_result_3min":[],
             "early_trade_result_8min":[], 
