@@ -847,7 +847,7 @@ def create_comment(blue_result, red_result, tier, team):
             blue_feedback = winrate_calc(blue_result, tier)
             red_feedback = winrate_calc(red_result, tier)
             if blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] > 0.2:
-                comparisons['early_trade_result_3min'].append("라인전 초반 딜교에서 우위를 가져갈 확률이 높습니다.")
+                comparisons['early_trade_result_3min'].append("상대방 초반 딜교에서 우위를 가져갈 확률이 높습니다.")
             elif blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] < -0.2:
                 comparisons['early_trade_result_3min'].append("라인전 초반 딜교에서 불리한 확률이 높습니다.")
             else:
@@ -940,14 +940,24 @@ def create_comment(blue_result, red_result, tier, team):
         }
     else:
         comparisons = {
-            "enemy_jungle":[], "top_jungle":[], "bot_jungle":[],
+            "enemy_jungleutil":[], "my_jungleutil":[],
             "TOP":[], "MID":[], "BOT":[], "OTHER":[],
         }
         winrate = 0 
         if team == "blue":
             blue_feedback = winrate_calc(blue_result, tier)
             red_feedback = winrate_calc(red_result, tier)
-            print("테스트테스트테스트 블루")
+            if red_result["top_jungle"]>red_result["bot_jungle"]:
+                comparisons['enemy_jungleutil'].append(f"상대방은 탑에서 평균 {red_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 탑쪽 정글에서 활동합니다.")
+            elif red_result["top_jungle"]<red_result["bot_jungle"]:
+                comparisons['enemy_jungleutil'].append(f"상대방은 탑에서 평균 {red_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 바텀쪽 정글에서 활동합니다.")
+            else:
+                comparisons['enemy_jungleutil'].append(f"상대방은 탑에서 평균 {red_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 탑과 바텀 모두를 돌아다닙니다.")
+            comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {red_result['TOP'][0]}킬을 기록하고 {red_result['TOP'][1]}데스를 기록했습니다.")
+            comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {red_result['MID'][0]}킬을 기록하고 {red_result['MID'][1]}데스를 기록했습니다.")
+            comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {red_result['BOT'][0]}킬을 기록하고 {red_result['BOT'][1]}데스를 기록했습니다.")
+            comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {red_result['OTHER'][0]}킬을 기록하고 {red_result['OTHER'][1]}데스를 기록했습니다.")
+            winrate = blue_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
             return{
                 "blue": {"player": blue_result['player'], "feedback": blue_feedback},
                 "red": {"player": red_result['player'], "feedback": red_feedback},
@@ -957,7 +967,17 @@ def create_comment(blue_result, red_result, tier, team):
         else:
             red_feedback = winrate_calc(red_result, tier)
             blue_feedback = winrate_calc(blue_result, tier)
-            print("테스트테스트테스트 레드")
+            if blue_result["top_jungle"]>blue_result["bot_jungle"]:
+                comparisons['enemy_jungleutil'].append(f"상대방은 탑에서 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 탑쪽 정글에서 활동합니다.")
+            elif blue_result["top_jungle"]<blue_result["bot_jungle"]:
+                comparisons['enemy_jungleutil'].append(f"상대방은 탑에서 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 바텀쪽 정글에서 활동합니다.")
+            else:
+                comparisons['enemy_jungleutil'].append(f"상대방은 탑에서 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 탑과 바텀 모두를 돌아다닙니다.")
+            comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {blue_result['TOP'][0]}킬을 기록하고 {blue_result['TOP'][1]}데스를 기록했습니다.")
+            comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {blue_result['MID'][0]}킬을 기록하고 {blue_result['MID'][1]}데스를 기록했습니다.")
+            comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {blue_result['BOT'][0]}킬을 기록하고 {blue_result['BOT'][1]}데스를 기록했습니다.")
+            comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {blue_result['OTHER'][0]}킬을 기록하고 {blue_result['OTHER'][1]}데스를 기록했습니다.")
+            winrate = red_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
             return{
                 "blue": {"player": blue_result['player'], "feedback": blue_feedback},
                 "red": {"player": red_result['player'], "feedback": red_feedback},
