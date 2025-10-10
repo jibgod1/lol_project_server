@@ -888,6 +888,10 @@ def create_comment(blue_result, red_result, tier, team):
             comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {red_result['MID'][0]}킬을 기록하고 {red_result['MID'][1]}데스를 기록했습니다.")
             comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {red_result['BOT'][0]}킬을 기록하고 {red_result['BOT'][1]}데스를 기록했습니다.")
             comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {red_result['OTHER'][0]}킬을 기록하고 {red_result['OTHER'][1]}데스를 기록했습니다.")
+            comparisons['TOP'].append(f"아군 라이너는 탑에서 평균 {blue_result['TOP'][0]}킬을 기록하고 {blue_result['TOP'][1]}데스를 기록했습니다.")
+            comparisons['MID'].append(f"아군 라이너는 미드에서 평균 {blue_result['MID'][0]}킬을 기록하고 {blue_result['MID'][1]}데스를 기록했습니다.")
+            comparisons['BOT'].append(f"아군 라이너는 바텀에서 평균 {blue_result['BOT'][0]}킬을 기록하고 {blue_result['BOT'][1]}데스를 기록했습니다.")
+            comparisons['OTHER'].append(f"아군 라이너는 정글에서 평균 {blue_result['OTHER'][0]}킬을 기록하고 {blue_result['OTHER'][1]}데스를 기록했습니다.")
             winrate = blue_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
         else:
             red_feedback = winrate_calc(red_result, tier)
@@ -930,6 +934,10 @@ def create_comment(blue_result, red_result, tier, team):
             comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {blue_result['MID'][0]}킬을 기록하고 {blue_result['MID'][1]}데스를 기록했습니다.")
             comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {blue_result['BOT'][0]}킬을 기록하고 {blue_result['BOT'][1]}데스를 기록했습니다.")
             comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {blue_result['OTHER'][0]}킬을 기록하고 {blue_result['OTHER'][1]}데스를 기록했습니다.")
+            comparisons['TOP'].append(f"아군 라이너는 탑에서 평균 {red_result['TOP'][0]}킬을 기록하고 {red_result['TOP'][1]}데스를 기록했습니다.")
+            comparisons['MID'].append(f"아군 라이너는 미드에서 평균 {red_result['MID'][0]}킬을 기록하고 {red_result['MID'][1]}데스를 기록했습니다.")
+            comparisons['BOT'].append(f"아군 라이너는 바텀에서 평균 {red_result['BOT'][0]}킬을 기록하고 {red_result['BOT'][1]}데스를 기록했습니다.")
+            comparisons['OTHER'].append(f"아군 라이너는 정글에서 평균 {red_result['OTHER'][0]}킬을 기록하고 {red_result['OTHER'][1]}데스를 기록했습니다.")
             winrate = red_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
             
         print(blue_feedback)
@@ -971,6 +979,10 @@ def create_comment(blue_result, red_result, tier, team):
             comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {red_result['MID'][0]}킬을 기록하고 {red_result['MID'][1]}데스를 기록했습니다.")
             comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {red_result['BOT'][0]}킬을 기록하고 {red_result['BOT'][1]}데스를 기록했습니다.")
             comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {red_result['OTHER'][0]}킬을 기록하고 {red_result['OTHER'][1]}데스를 기록했습니다.")
+            comparisons['TOP'].append(f"아군 라이너는 탑에서 평균 {blue_result['TOP'][0]}킬을 기록하고 {blue_result['TOP'][1]}데스를 기록했습니다.")
+            comparisons['MID'].append(f"아군 라이너는 미드에서 평균 {blue_result['MID'][0]}킬을 기록하고 {blue_result['MID'][1]}데스를 기록했습니다.")
+            comparisons['BOT'].append(f"아군 라이너는 바텀에서 평균 {blue_result['BOT'][0]}킬을 기록하고 {blue_result['BOT'][1]}데스를 기록했습니다.")
+            comparisons['OTHER'].append(f"아군 라이너는 정글에서 평균 {blue_result['OTHER'][0]}킬을 기록하고 {blue_result['OTHER'][1]}데스를 기록했습니다.")
             winrate = blue_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
             return{
                 "blue": {"player": blue_result['player'], "feedback": blue_feedback},
@@ -997,6 +1009,10 @@ def create_comment(blue_result, red_result, tier, team):
             comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {blue_result['MID'][0]}킬을 기록하고 {blue_result['MID'][1]}데스를 기록했습니다.")
             comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {blue_result['BOT'][0]}킬을 기록하고 {blue_result['BOT'][1]}데스를 기록했습니다.")
             comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {blue_result['OTHER'][0]}킬을 기록하고 {blue_result['OTHER'][1]}데스를 기록했습니다.")
+            comparisons['TOP'].append(f"아군 라이너는 탑에서 평균 {red_result['TOP'][0]}킬을 기록하고 {red_result['TOP'][1]}데스를 기록했습니다.")
+            comparisons['MID'].append(f"아군 라이너는 미드에서 평균 {red_result['MID'][0]}킬을 기록하고 {red_result['MID'][1]}데스를 기록했습니다.")
+            comparisons['BOT'].append(f"아군 라이너는 바텀에서 평균 {red_result['BOT'][0]}킬을 기록하고 {red_result['BOT'][1]}데스를 기록했습니다.")
+            comparisons['OTHER'].append(f"아군 라이너는 정글에서 평균 {red_result['OTHER'][0]}킬을 기록하고 {red_result['OTHER'][1]}데스를 기록했습니다.")
             winrate = red_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
             return{
                 "blue": {"player": blue_result['player'], "feedback": blue_feedback},
