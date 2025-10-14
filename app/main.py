@@ -8,7 +8,7 @@ import get_player_puuid
 from pydantic import BaseModel
 from typing import List
 import torch
-from item_model import recommend_items_filtered
+from item_feedback import recommend_items_filtered
 
 
 
