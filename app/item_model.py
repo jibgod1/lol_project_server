@@ -195,7 +195,10 @@ def train_item_model():
         'model_state': model.state_dict(),
         'num_roles': len(role2idx),
         'num_enemy_roles': num_enemy_roles,
-        'num_items': len(valid_items)
+        'num_items': len(valid_items),
+        'role2idx': role2idx,
+        'role2idx_enemy': role2idx_enemy,
+        'valid_items': valid_items,
     }
     torch.save(checkpoint, MODEL_PATH)
     print(f"모델 저장 완료: {MODEL_PATH}")
