@@ -4,33 +4,45 @@ import pandas as pd
 import numpy as np
 import os
 import json
-from sklearn.preprocessing import MultiLabelBinarizer
-from fastfm import sgd
-from scipy.sparse import csr_matrix, hstack
+import torch
+import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader, random_split
 
-# 1️⃣ DB와 JSON 경로
+# ------------------------------
+# 경로 설정
+# ------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, "data", "item_data.db")
 JSON_PATH = os.path.join(BASE_DIR, "data", "item.json")
+MODEL_PATH = os.path.join(BASE_DIR, "data", "item_feedback.pth")
 
-# 2️⃣ DB 불러오기
+# ------------------------------
+# 데이터 불러오기
+# ------------------------------
 conn = sqlite3.connect(DB_PATH)
 df = pd.read_sql_query("SELECT * FROM item_feedback", conn)
 conn.close()
 
-# 3️⃣ JSON 읽기 (아이템 정보)
 with open(JSON_PATH, "r", encoding="utf-8") as f:
     item_data = json.load(f)
 
-# 2200원 이상 아이템만 사용
 valid_items = [int(k) for k, v in item_data["data"].items() if v.get("gold", {}).get("total", 0) >= 2200]
 
-# 4️⃣ 역할과 아이템 파싱
-def parse_roles_simple(role_str):
-    """각 챔피언의 역할 문자열 그대로 하나로 처리"""
-    if role_str and role_str.strip() != "":
-        return [role_str.strip()]
-    return []
+# ------------------------------
+# 파싱 함수
+# ------------------------------
+def parse_roles(role_str):
+    if not role_str or role_str.strip() == "":
+        return []
+    return [r.strip() for r in role_str.split(',')]
+
+def parse_enemy_roles(enemy_str):
+    champions = enemy_str.split(';')
+    res = []
+    for champ in champions:
+        roles = [r.strip() for r in champ.split('|') if r.strip() != '']
+        res.append(roles)
+    return res
 
 def parse_items(item_str):
     if not item_str or item_str.strip() == "":
@@ -47,50 +59,175 @@ def parse_items(item_str):
             continue
     return items
 
-df['my_roles_list'] = df['my_role'].apply(parse_roles_simple)
-df['enemy_roles_list'] = df['enemy_roles'].apply(lambda x: [r.strip() for r in x.split(',') if r.strip() != ""])
+# ------------------------------
+# 데이터 전처리
+# ------------------------------
+df['my_roles_list'] = df['my_role'].apply(parse_roles)
+df['enemy_roles_list'] = df['enemy_roles'].apply(parse_enemy_roles)
 df['my_items_list'] = df['my_items'].apply(parse_items)
 
-# 5️⃣ MultiLabelBinarizer로 벡터화
-mlb_my_roles = MultiLabelBinarizer()
-X_my_roles = mlb_my_roles.fit_transform(df['my_roles_list'])
+# 내 역할 인덱스
+all_my_roles = list(set([r for sublist in df['my_roles_list'] for r in sublist]))
+role2idx = {r:i for i,r in enumerate(all_my_roles)}
+df['my_roles_idx'] = df['my_roles_list'].apply(lambda lst: [role2idx[r] for r in lst if r in role2idx])
 
-mlb_enemy_roles = MultiLabelBinarizer()
-X_enemy_roles = mlb_enemy_roles.fit_transform(df['enemy_roles_list'])
+# 상대 역할 인덱스
+all_enemy_roles = list(set([role for champ in df['enemy_roles_list'] for role in champ if isinstance(role, str)]))
+role2idx_enemy = {r:i for i,r in enumerate(all_enemy_roles)}
+num_enemy_roles = len(role2idx_enemy)
+max_enemy = 5
 
-mlb_items = MultiLabelBinarizer(classes=valid_items)
-X_items = mlb_items.fit_transform(df['my_items_list'])
+def enemy_roles_to_idx(champ_roles_list):
+    idx_list = []
+    for champ_roles in champ_roles_list:
+        idxs = [role2idx_enemy[r] for r in champ_roles if r in role2idx_enemy]
+        if len(idxs) > 0:
+            idx_list.append(np.mean(idxs))
+        else:
+            idx_list.append(num_enemy_roles)  # padding
+    while len(idx_list) < max_enemy:
+        idx_list.append(num_enemy_roles)
+    return idx_list[:max_enemy]
 
-# 6️⃣ 모든 피쳐 합치기
-X = hstack([X_my_roles, X_items, X_enemy_roles])
-y = df['win'].values
+df['enemy_roles_idx'] = df['enemy_roles_list'].apply(enemy_roles_to_idx)
 
-# 7️⃣ FM 모델 학습
-fm_model = sgd.FMClassification(n_iter=30, init_stdev=0.1, rank=8, l2_reg_w=0.1, l2_reg_V=0.1, step_size=0.01)
-fm_model.fit(X, y)
+# 아이템 인덱스
+item2idx = {item_id:i for i,item_id in enumerate(valid_items)}
+df['my_items_idx'] = df['my_items_list'].apply(lambda lst: [item2idx[i] for i in lst if i in item2idx])
 
-# 8️⃣ 추천 함수
-def recommend_items_fm(my_role_input, enemy_roles_input, top_n=5):
-    # 8-1️⃣ 입력 벡터화
-    X_my_role_input = mlb_my_roles.transform([[my_role_input]])
-    X_enemy_roles_input = mlb_enemy_roles.transform([enemy_roles_input])
+used_item_idx = set([i for sublist in df['my_items_idx'] for i in sublist])
+
+# ------------------------------
+# Dataset
+# ------------------------------
+win_factor = 0.3  # 승리 가중치
+
+class ItemDataset(Dataset):
+    def __init__(self, df, max_enemy=5):
+        self.my_roles_list = df['my_roles_idx'].tolist()
+        self.enemy_roles = torch.tensor(df['enemy_roles_idx'].tolist(), dtype=torch.long)
+        y = np.zeros((len(df), len(valid_items)), dtype=np.float32)
+        for i, row in enumerate(df['my_items_idx']):
+            if not row:
+                continue
+            for idx in row:
+                if idx >= y.shape[1]:
+                    continue
+                if df.iloc[i]['win'] == 1:
+                    y[i, idx] = 1.0 + win_factor
+                else:
+                    y[i, idx] = 1.0 - win_factor
+        y = np.clip(y, 0.0, 1.0)
+        self.y = torch.tensor(y, dtype=torch.float32)
+        self.max_enemy = max_enemy
     
-    scores = []
-    for item_id in mlb_items.classes_:
-        X_item_input = mlb_items.transform([[item_id]])
-        X_input = hstack([X_my_role_input, X_item_input, X_enemy_roles_input])
-        score = fm_model.predict(X_input)[0]
-        scores.append((item_id, score))
+    def __len__(self):
+        return len(self.y)
     
-    # 8-2️⃣ 상위 top_n 선택
-    scores.sort(key=lambda x: x[1], reverse=True)
-    top_items = [(item_data["data"][str(item_id)]["name"], score) for item_id, score in scores[:top_n]]
-    return top_items
+    def __getitem__(self, idx):
+        return self.my_roles_list[idx], self.enemy_roles[idx], self.y[idx]
 
-# 9️⃣ 사용 예시
-my_role = 'Fighter'  # 내 역할
-enemy_roles = ['Assassin', 'Mage', 'Tank', 'Support', 'Marksman']  # 상대 역할
-recommended = recommend_items_fm(my_role, enemy_roles, top_n=5)
-print("추천 아이템:", recommended)
+# ------------------------------
+# 학습/테스트 분리
+# ------------------------------
+dataset = ItemDataset(df)
+train_size = int(0.8 * len(dataset))
+test_size = len(dataset) - train_size
+train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, collate_fn=lambda batch: batch)
+test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, collate_fn=lambda batch: batch)
+
+# ------------------------------
+# 모델 정의
+# ------------------------------
+class ItemRecommender(nn.Module):
+    def __init__(self, num_roles, num_enemy_roles, num_items, embed_dim=16, hidden_dim=128, max_enemy=5):
+        super(ItemRecommender, self).__init__()
+        self.role_embed = nn.Embedding(num_roles, embed_dim)
+        self.enemy_embed = nn.Embedding(num_enemy_roles+1, embed_dim, padding_idx=num_enemy_roles)
+        self.fc1 = nn.Linear(embed_dim*2, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc_out = nn.Linear(hidden_dim, num_items)
+        self.sigmoid = nn.Sigmoid()
+        self.max_enemy = max_enemy
+    
+    def forward(self, my_roles_idx_list, enemy_idx):
+        role_vecs = []
+        for role_idxs in my_roles_idx_list:
+            role_tensor = torch.tensor(role_idxs, dtype=torch.long)
+            role_emb = self.role_embed(role_tensor)
+            role_vecs.append(role_emb.mean(dim=0))
+        role_vec = torch.stack(role_vecs)
+        enemy_vec = self.enemy_embed(enemy_idx).mean(dim=1)
+        x = torch.cat([role_vec, enemy_vec], dim=1)
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
+        x = self.sigmoid(self.fc_out(x))
+        return x
+
+model = ItemRecommender(num_roles=len(role2idx), num_enemy_roles=num_enemy_roles, num_items=len(valid_items))
+
+# ------------------------------
+# 학습
+# ------------------------------
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+criterion = nn.BCELoss()
+
+for batch in train_loader:
+    optimizer.zero_grad()
+    my_roles_batch, enemy_batch, y_batch = zip(*batch)
+    outputs = model(list(my_roles_batch), torch.stack(enemy_batch))
+    y_batch_tensor = torch.stack(y_batch)
+    loss = criterion(outputs, y_batch_tensor)
+    loss.backward()
+    optimizer.step()
+
+# ------------------------------
+# 테스트 평가
+# ------------------------------
+model.eval()
+total_loss = 0
+with torch.no_grad():
+    for batch in test_loader:
+        my_roles_batch, enemy_batch, y_batch = zip(*batch)
+        outputs = model(list(my_roles_batch), torch.stack(enemy_batch))
+        y_batch_tensor = torch.stack(y_batch)
+        loss = criterion(outputs, y_batch_tensor)
+        total_loss += loss.item()
+print(f"테스트 BCE Loss: {total_loss/len(test_loader):.4f}")
+
+# ------------------------------
+# 모델 저장
+# ------------------------------
+checkpoint = {
+    'model_state': model.state_dict(),
+    'num_roles': len(role2idx),
+    'num_enemy_roles': num_enemy_roles,
+    'num_items': len(valid_items)
+}
+torch.save(checkpoint, MODEL_PATH)
+print(f"모델 저장 완료: {MODEL_PATH}")
+
+# ------------------------------
+# 추천 함수
+# ------------------------------
+def recommend_items_filtered(my_roles_input, enemy_roles_input, top_n=5):
+    checkpoint = torch.load(MODEL_PATH)
+    loaded_model = ItemRecommender(
+        num_roles=checkpoint['num_roles'],
+        num_enemy_roles=checkpoint['num_enemy_roles'],
+        num_items=checkpoint['num_items']
+    )
+    loaded_model.load_state_dict(checkpoint['model_state'])
+    loaded_model.eval()
+    
+    if isinstance(my_roles_input, str):
+        my_roles_input = [my_roles_input]
+    my_roles_idx_input = [role2idx[r] for r in my_roles_input if r in role2idx]
+    enemy_idx_input = torch.tensor([enemy_roles_to_idx(enemy_roles_input)], dtype=torch.long)
+    
+    with torch.no_grad():
+        pred = loaded_model
 
 # %%
