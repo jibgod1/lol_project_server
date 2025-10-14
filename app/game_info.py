@@ -4,6 +4,7 @@ import time
 import sqlite3
 import os
 import config  
+import json
 
 def game_info(match_id, tier, flag):
     api_key = config.API_KEY
@@ -28,6 +29,8 @@ def game_info(match_id, tier, flag):
             
             if match_data["info"]["gameMode"] == "CLASSIC" or match_data["info"]["queueId"] in ranked_queue_ids:
                 results = info(match_id, match_data, match_info, flag)
+                item_results = item_info(match_data, flag)
+                save_item_to_db(item_results)
                 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
                 DATA_DIR = os.path.join(BASE_DIR, "data")
                 db_path = os.path.join(DATA_DIR, "match_data.db")
@@ -268,7 +271,134 @@ def info(match_id, match_data, match_info, flag):
         }
     return results
 
+def item_info(match_data, flag):
+    results = {}
 
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    JSON_PATH = os.path.join(BASE_DIR, "data", "item.json")
+
+    # JSON 읽기
+    with open(JSON_PATH, "r", encoding="utf-8") as f:
+        item_data = json.load(f)
+
+    for player in match_data['info']['participants']:
+        pid = player.get('participantId', 0)
+        team_id = player.get('teamId', 0)
+
+        # 🔹 flag 조건 (블루팀 / 레드팀 구분)
+        if flag == "ODD" and pid % 2 == 0:
+            continue
+        elif flag == "EVEN" and pid % 2 != 0:
+            continue
+
+        # 🔹 내 챔피언 역할 (리스트)
+        my_roles = get_champion_roles(player.get('championName', 'Unknown'))
+
+        # 🔹 내가 산 아이템 (최대 7개) + 2200원 이상 필터
+        my_items = [player.get(f'item{i}', 0) for i in range(7)]
+        my_items = [item for item in my_items if item != 0]
+
+        # 🔹 2200원 이상 아이템만 필터링
+        filtered_items = []
+        total_gold = 0
+        for item_id in my_items:
+            item_str_id = str(item_id)
+            if item_str_id in item_data["data"]:
+                price = item_data["data"][item_str_id].get("gold", {}).get("total", 0)
+                if price >= 2200:
+                    filtered_items.append(item_id)
+                    total_gold += price
+
+        # 🔹 상대팀 역할 (각 챔피언 역할 리스트)
+        enemy_roles = []
+        for p in match_data['info']['participants']:
+            if p.get('teamId') != team_id:
+                enemy_roles.append(get_champion_roles(p.get('championName', 'Unknown')))
+
+        # 🔹 승패 (True/False → 1/0)
+        win = 1 if player.get('win') else 0
+
+        # 🔹 결과 저장
+        results[pid] = {
+            "my_roles": my_roles,
+            "my_items": filtered_items,   # 2200원 이상 아이템만
+            "enemy_roles": enemy_roles,
+            "total_gold": total_gold,     # 2200원 이상 아이템 기준
+            "win": win
+        }
+
+    return results
+
+def get_champion_roles(champ_name):
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    DB_PATH = os.path.join(BASE_DIR, "data", "champion_data.db")
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT champ_tags FROM champion WHERE champ_name = ?", (champ_name,))
+    result = cursor.fetchone()
+    conn.close()
+    
+    if result:
+        tags = [tag.strip() for tag in result[0].split(",")]
+        return tags
+    else:
+        return ["Unknown"]
+
+def calculate_total_item_gold(my_items):
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    JSON_PATH = os.path.join(BASE_DIR, "data", "item.json")
+
+    # JSON 읽기
+    with open(JSON_PATH, "r", encoding="utf-8") as f:
+        item_data = json.load(f)
+
+    total_gold = 0
+    for item_id in my_items:
+        item_str_id = str(item_id)
+        if item_str_id in item_data["data"]:
+            item_info = item_data["data"][item_str_id]
+            price = item_info.get("gold", {}).get("total", 0)
+            
+            if price >= 2200:
+                item_name = item_info.get("name", "Unknown")
+                print(f"아이템: {item_name}, 가격: {price}")
+                total_gold += price
+    print(f"total: {total_gold}")
+    return total_gold
+
+def save_item_to_db(results):
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    DB_PATH = os.path.join(BASE_DIR, "data", "item_data.db")
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS item_feedback (
+            my_role TEXT,
+            my_items TEXT,
+            enemy_roles TEXT,
+            total_gold INTEGER,
+            win INTEGER
+        )
+    """)
+
+    for pid, data in results.items():
+        my_roles_str = ",".join(data["my_roles"])
+        my_items_str = ",".join(map(str, data["my_items"]))
+        enemy_roles_str = ";".join(["|".join(r) for r in data["enemy_roles"]])
+        print(f"db total: {data['total_gold']}")
+        cursor.execute("""
+            INSERT INTO item_feedback
+            (my_role, my_items, enemy_roles, total_gold, win)
+            VALUES (?, ?, ?, ?, ?)
+        """, (my_roles_str, my_items_str, enemy_roles_str, data["total_gold"], data["win"]))
+
+    conn.commit()
+    conn.close()
+    print(f"{len(results)}개의 데이터가 item_data.db에 저장되었습니다.")
 # %%
 
 

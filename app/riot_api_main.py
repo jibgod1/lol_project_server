@@ -9,8 +9,9 @@ import get_random_players
 import game_info
 
 tier1 = ["IRON", "BRONZE", "SILVER", "GOLD"]
-tier2 = ["PLATINUM", "EMERALD", "DIAMOND", ]
-player_count = 500
+#tier2 = ["PLATINUM", "EMERALD", "DIAMOND"]
+tier2 = ["PLATINUM"]
+player_count = 100
 players_per_batch = 10 # 몇명씩 잘라서 수집할지
 matches_per_player = 10  # 각 플레이어 당 수집할 매치 수
 positions = ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'UTILITY']

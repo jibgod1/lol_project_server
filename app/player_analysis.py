@@ -617,12 +617,12 @@ def generate_feedback(positive, negative, below_avg):
                 feedback["below_avg"].append("라인전 데스 차이가 평균보다 높습니다. 라인전에서 킬각을 조심하고, 로밍, 정글에 들어갈때도 안전하게 플레이하도록 합시다.")
         elif f == "diff_early_a":
             if coef > 0:
-                feedback["below_avg"].append("라인전 어시스트 차이가 평균보다 낮습니다. 교전 참여를 통해 어시스트, 혹은 킬까지 노려보도록 합시다.")
+                feedback["below_avg"].append("라인전 어시스트 차이가 평균보다 높습니다. 교전 참여를 통해 어시스트, 혹은 킬까지 노려보도록 합시다.")
             else:
                 feedback["below_avg"].append("라인전 어시스트 차이가 평균보다 높습니다. 과한 로밍, 정글 개입은 오히려 악영향을 미칠 수 있습니다.")
         elif f == "diff_lane_cs":
             if coef > 0:
-                feedback["below_avg"].append("라인전 cs차이가 평균보다 낮습니다. 라인 관리 능력, cs를 먹는 능력 등이 부족해 보입니다." 
+                feedback["below_avg"].append("라인전 cs차이가 평균보다 높습니다. 라인 관리 능력, cs를 먹는 능력 등이 부족해 보입니다." 
                                              " ai, 사용자 게임을 통해 연습을 하거나 동영상을 통해 학습을 하도록 합시다.")
             else:
                 feedback["below_avg"].append("라인전 cs차이가 평균보다 높습니다. 자신의 성장만 신경쓰기 보다는 팀원의 성장에 조금 더 신경 쓰는게 좋아보입니다.")
