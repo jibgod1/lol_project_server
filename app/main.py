@@ -15,8 +15,6 @@ from item_model import load_item_model, recommend_items
 app = FastAPI()
 
 item_model, valid_items, role2idx, num_roles, item_data = load_item_model()
-print(role2idx)
-print("모델 로드 완료")
 
 class AnalysisRequest(BaseModel):
     prev_result: dict
@@ -45,8 +43,7 @@ def root(req: AnalysisRequest):
     
 @app.post("/item_feedback")
 def item_feedback(req: ItemFeedbackRequest):
-    print("item_feedback 내부")
-    print(role2idx)
+    print(ItemFeedbackRequest)
     top_items = recommend_items(
         req.my_roles, 
         req.enemy_roles, 
