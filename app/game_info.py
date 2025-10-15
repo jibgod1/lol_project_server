@@ -365,7 +365,7 @@ def calculate_total_item_gold(my_items):
                 item_name = item_info.get("name", "Unknown")
                 print(f"아이템: {item_name}, 가격: {price}")
                 total_gold += price
-    print(f"total: {total_gold}")
+
     return total_gold
 
 def save_item_to_db(results):
@@ -389,7 +389,6 @@ def save_item_to_db(results):
         my_roles_str = ",".join(data["my_roles"])
         my_items_str = ",".join(map(str, data["my_items"]))
         enemy_roles_str = ";".join(["|".join(r) for r in data["enemy_roles"]])
-        print(f"db total: {data['total_gold']}")
         cursor.execute("""
             INSERT INTO item_feedback
             (my_role, my_items, enemy_roles, total_gold, win)
@@ -398,7 +397,6 @@ def save_item_to_db(results):
 
     conn.commit()
     conn.close()
-    print(f"{len(results)}개의 데이터가 item_data.db에 저장되었습니다.")
 # %%
 
 

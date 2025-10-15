@@ -8,11 +8,13 @@ import get_player_puuid
 from pydantic import BaseModel
 from typing import List
 import torch
-from item_feedback import recommend_items_filtered
+from item_model import load_item_model, recommend_items
 
 
 
 app = FastAPI()
+
+item_model, valid_items, role2idx, num_roles, item_data = load_item_model()
 
 class AnalysisRequest(BaseModel):
     prev_result: dict
@@ -41,6 +43,15 @@ def root(req: AnalysisRequest):
     
 @app.post("/item_feedback")
 def item_feedback(req: ItemFeedbackRequest):
-    top_items = recommend_items_filtered(req.my_roles, req.enemy_roles, top_n=5)
+    top_items = recommend_items(
+        req.my_roles, 
+        req.enemy_roles, 
+        top_n=5,
+        model=item_model,
+        valid_items=valid_items,
+        role2idx=role2idx,
+        num_roles=num_roles,
+        item_data=item_data
+    )
     return {"recommended_items": top_items}
 
