@@ -12,6 +12,7 @@ from torch.utils.data import TensorDataset, DataLoader
 # 경로
 # ------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print(f"{BASE_DIR}")
 DB_PATH = os.path.join(BASE_DIR, "data", "item_data.db")
 JSON_PATH = os.path.join(BASE_DIR, "data", "item.json")
 MODEL_PATH = os.path.join(BASE_DIR, "data", "item_model.pth")
@@ -195,7 +196,8 @@ def recommend_items(my_roles, enemy_roles, top_n=5, model=None, valid_items=None
 # 실행 예시
 # ------------------------------
 if __name__ == "__main__":
-    train_and_save_item_mlp(DB_PATH, JSON_PATH, MODEL_PATH)
+    #train_and_save_item_mlp(DB_PATH, JSON_PATH, MODEL_PATH)
+
     item_model, valid_items, role2idx, num_roles, item_data = load_item_model()
     my_roles = ['Marksman']
     enemy_roles = [
