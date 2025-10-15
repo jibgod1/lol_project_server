@@ -14,7 +14,7 @@ from torch.utils.data import TensorDataset, DataLoader
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, "data", "item_data.db")
 JSON_PATH = os.path.join(BASE_DIR, "data", "item.json")
-MODEL_PATH = os.path.join(BASE_DIR, "data", "item_model")
+MODEL_PATH = os.path.join(BASE_DIR, "data", "item_model.pth")
 
 # ------------------------------
 # MLP 모델 정의
