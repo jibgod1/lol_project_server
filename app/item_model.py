@@ -199,13 +199,13 @@ if __name__ == "__main__":
     #train_and_save_item_mlp(DB_PATH, JSON_PATH, MODEL_PATH)
 
     item_model, valid_items, role2idx, num_roles, item_data = load_item_model()
-    my_roles = ['Marksman']
+    my_roles = ["Fighter,Tank"]
     enemy_roles = [
-        ['Assassin'],
-        ['Assassin'],
-        ['Assassin'],
-        ['Marksman','Mage'],
-        ['Mage','Support']
+        ["Fighter", "Tank"],   
+        ["Fighter", "Tank"],   
+        ["Mage", "Support"],   
+        ["Marksman"],          
+        ["Support", "Tank"]    
     ]
     top_items = recommend_items(
         my_roles, 

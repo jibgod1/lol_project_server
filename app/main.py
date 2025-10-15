@@ -43,7 +43,7 @@ def root(req: AnalysisRequest):
     
 @app.post("/item_feedback")
 def item_feedback(req: ItemFeedbackRequest):
-    print(ItemFeedbackRequest)
+    print(req)
     top_items = recommend_items(
         req.my_roles, 
         req.enemy_roles, 
