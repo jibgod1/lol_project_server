@@ -998,7 +998,7 @@ def create_comment(blue_result, red_result, tier, team):
             elif blue_result["top_jungle"]<blue_result["bot_jungle"]:
                 comparisons['My Area'].append(f"상대방은 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 바텀쪽 정글에서 활동합니다.")
             else:
-                comparisons['MY Area'].append(f"상대방은 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 탑과 바텀 모두를 돌아다닙니다.")
+                comparisons['My Area'].append(f"상대방은 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 탑과 바텀 모두를 돌아다닙니다.")
             if red_result["top_jungle"]>red_result["bot_jungle"]:
                 comparisons['Enemy Area'].append(f"아군은 평균 {red_result['enemy_jungle']}번 상대 정글에 들어갔고 주로 탑쪽 정글에서 활동합니다.")
             elif red_result["top_jungle"]<red_result["bot_jungle"]:
