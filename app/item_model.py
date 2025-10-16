@@ -192,7 +192,7 @@ def recommend_items(my_roles, enemy_roles, top_n=5, model=None, valid_items=None
         # 아이템 코드, 이름
         top_items = [
             {
-                "id": valid_items[i],
+                "id": int(valid_items[i]),
                 "name": item_data['data'][str(valid_items[i])]['name']
             }
             for i in topk_indices
