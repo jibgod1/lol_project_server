@@ -189,9 +189,16 @@ def recommend_items(my_roles, enemy_roles, top_n=5, model=None, valid_items=None
     with torch.no_grad():
         scores = model(vec.unsqueeze(0)).squeeze()
         topk_indices = torch.topk(scores, top_n).indices.tolist()
-        top_items = [item_data['data'][str(valid_items[i])]['name'] for i in topk_indices]
-    return top_items
 
+        # 아이템 코드, 이름
+        top_items = [
+            {
+                "id": valid_items[i],
+                "name": item_data['data'][str(valid_items[i])]['name']
+            }
+            for i in topk_indices
+        ]
+    return top_items
 # ------------------------------
 # 실행 예시
 # ------------------------------
