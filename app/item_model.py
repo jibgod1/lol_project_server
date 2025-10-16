@@ -12,7 +12,6 @@ from torch.utils.data import TensorDataset, DataLoader
 # 경로
 # ------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print(f"{BASE_DIR}")
 DB_PATH = os.path.join(BASE_DIR, "data", "item_data.db")
 JSON_PATH = os.path.join(BASE_DIR, "data", "item.json")
 MODEL_PATH = os.path.join(BASE_DIR, "data", "item_model.pth")
@@ -226,4 +225,3 @@ if __name__ == "__main__":
     )
     print("추천 아이템:", top_items)
 
-# %%
