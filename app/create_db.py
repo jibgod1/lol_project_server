@@ -20,7 +20,7 @@ def create_match_db():
         cursor.execute(f'''
         CREATE TABLE IF NOT EXISTS {table_name}(
             match_id TEXT,
-            teamposition TEXT,ql
+            teamposition TEXT,
             my_champion TEXT,
             enemy_champion TEXT,
             kills INTEGER,
@@ -137,3 +137,5 @@ def create_champion_db():
 
 
 
+
+# %%

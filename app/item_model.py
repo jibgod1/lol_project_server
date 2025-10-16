@@ -205,7 +205,7 @@ if __name__ == "__main__":
     #train_and_save_item_mlp(DB_PATH, JSON_PATH, MODEL_PATH)
 
     item_model, valid_items, role2idx, num_roles, item_data = load_item_model()
-    my_roles = ["Fighter,Tank"]
+    my_roles = ["Fighter","Tank"]
     enemy_roles = [
         ["Fighter", "Tank"],   
         ["Fighter", "Tank"],   
@@ -225,3 +225,5 @@ if __name__ == "__main__":
     )
     print("추천 아이템:", top_items)
 
+
+# %%
