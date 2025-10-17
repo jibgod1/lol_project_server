@@ -23,35 +23,36 @@ class ItemMLP(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.bn1 = nn.BatchNorm1d(hidden_dim)
         self.fc2 = nn.Linear(hidden_dim, hidden_dim)
-        self.bn2 = nn.BatchNorm1d(hidden_dim)
         self.fc3 = nn.Linear(hidden_dim, hidden_dim)
-        self.bn3 = nn.BatchNorm1d(hidden_dim)
         self.fc4 = nn.Linear(hidden_dim, hidden_dim)
-        self.bn4 = nn.BatchNorm1d(hidden_dim)
         self.fc_out = nn.Linear(hidden_dim, output_dim)
         self.dropout = nn.Dropout(0.3)
 
     def forward(self, x):
-        x = F.relu(self.bn1(self.fc1(x)))
+        x = F.relu(self.fc1(x))
         x = self.dropout(x)
-        x = F.relu(self.bn2(self.fc2(x)))
+        x = F.relu(self.fc2(x))
         x = self.dropout(x)
-        x = F.relu(self.bn3(self.fc3(x)))
+        x = F.relu(self.fc3(x))
         x = self.dropout(x)
-        x = F.relu(self.bn4(self.fc4(x)))
+        x = F.relu(self.fc4(x))
         x = self.dropout(x)
         return torch.sigmoid(self.fc_out(x))
+
 
 # ------------------------------
 # 입력 벡터 생성
 # ------------------------------
 def build_input_vector(my_roles, enemy_roles, num_roles, role2idx):
+    # 첫 번째 역할은 1.3, 두 번째 역할은 1.0
+    weights = [1.3, 1.0]
+
     my_vec = torch.zeros(num_roles)
-    for r in my_roles:
+    for i, r in enumerate(my_roles):
         if r in role2idx:
-            my_vec[role2idx[r]] = 1.0
+            w = weights[i] if i < len(weights) else 1.0  # 혹시 역할이 2개 넘으면 기본 1.0
+            my_vec[role2idx[r]] += w
 
     enemy_vec = torch.zeros(num_roles)
     for roles in enemy_roles:
@@ -59,8 +60,12 @@ def build_input_vector(my_roles, enemy_roles, num_roles, role2idx):
             if r in role2idx:
                 enemy_vec[role2idx[r]] += 1.0
 
-    interaction_vec = torch.ger(my_vec, enemy_vec).view(-1)
+    # 상호작용 (my vs enemy)
+    interaction_vec = torch.ger(my_vec, enemy_vec).view(-1)*1.5
+
+    # 최종 입력 벡터
     return torch.cat([my_vec, enemy_vec, interaction_vec], dim=0)
+
 
 # ------------------------------
 # 라벨 생성
@@ -77,7 +82,7 @@ def build_labels(item_str, valid_items):
 # 학습 및 모델 저장 함수
 # ------------------------------
 def train_and_save_item_mlp(DB_PATH, JSON_PATH, MODEL_PATH,
-                            hidden_dim=512, batch_size=64, epochs=10, lr=0.01,
+                            hidden_dim=512, batch_size=100, epochs=10, lr=0.01,
                             role_list=None):
     if role_list is None:
         role_list = ['Tank','Fighter','Marksman','Assassin','Mage','Support']
@@ -207,10 +212,10 @@ if __name__ == "__main__":
     item_model, valid_items, role2idx, num_roles, item_data = load_item_model()
     my_roles = ["Fighter","Tank"]
     enemy_roles = [
-        ["Fighter", "Tank"],   
-        ["Fighter", "Tank"],   
-        ["Mage", "Support"],   
-        ["Marksman"],          
+        ["Tank"],   
+        ["Mage"],   
+        ["Mage"],   
+        ["Mage"],          
         ["Support", "Tank"]    
     ]
     top_items = recommend_items(
