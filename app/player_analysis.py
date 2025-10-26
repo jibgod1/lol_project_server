@@ -416,8 +416,11 @@ def create_comment(blue_result, red_result, tier, team):
         comparisons = lane_summary(comparisons, my_team, opp_team)
 
     # 🏆 승률 계산
-    winrate = my_team["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"]) \
-        if team == "blue" else my_team["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"])
+    if team == "blue":
+        winrate = blue_feedback["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"])
+    else:
+        winrate = red_feedback["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"])
+
 
     return {
         "blue": {"player": blue_result['player'], "feedback": blue_feedback},
