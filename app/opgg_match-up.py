@@ -165,7 +165,7 @@ if __name__ == '__main__':
         all_champions = json.load(f)
     hero_keys = [champ['key'] for champ in all_champions]
 
-    positions = ['top', 'jungle', 'mid', 'bottom', 'support']
+    positions = ['top', 'jungle', 'middle', 'bottom', 'utility']
     tiers = ['iron','bronze', 'silver', 'gold', 'gold_plus', 'platinum',
              'platinum_plus', 'emerald', 'emerald_plus', 'diamond', 'diamond_plus']
     regions = ['kr']  

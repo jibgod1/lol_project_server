@@ -40,18 +40,15 @@ class ItemMLP(nn.Module):
         x = self.dropout(x)
         return torch.sigmoid(self.fc_out(x))
 
-
 # ------------------------------
 # 입력 벡터 생성
 # ------------------------------
 def build_input_vector(my_roles, enemy_roles, num_roles, role2idx):
-    # 첫 번째 역할은 1.3, 두 번째 역할은 1.0
     weights = [1.3, 1.0]
-
     my_vec = torch.zeros(num_roles)
     for i, r in enumerate(my_roles):
         if r in role2idx:
-            w = weights[i] if i < len(weights) else 1.0  # 혹시 역할이 2개 넘으면 기본 1.0
+            w = weights[i] if i < len(weights) else 1.0
             my_vec[role2idx[r]] += w
 
     enemy_vec = torch.zeros(num_roles)
@@ -60,12 +57,8 @@ def build_input_vector(my_roles, enemy_roles, num_roles, role2idx):
             if r in role2idx:
                 enemy_vec[role2idx[r]] += 1.0
 
-    # 상호작용 (my vs enemy)
-    interaction_vec = torch.ger(my_vec, enemy_vec).view(-1)*1.5
-
-    # 최종 입력 벡터
+    interaction_vec = torch.ger(my_vec, enemy_vec).view(-1) * 4.0
     return torch.cat([my_vec, enemy_vec, interaction_vec], dim=0)
-
 
 # ------------------------------
 # 라벨 생성
@@ -96,7 +89,6 @@ def train_and_save_item_mlp(DB_PATH, JSON_PATH, MODEL_PATH,
     with open(JSON_PATH, "r", encoding="utf-8") as f:
         item_data = json.load(f)
 
-    # 역할
     role2idx = {r:i for i,r in enumerate(role_list)}
     num_roles = len(role2idx)
 
@@ -142,7 +134,7 @@ def train_and_save_item_mlp(DB_PATH, JSON_PATH, MODEL_PATH,
             epoch_loss += loss.item() * bx.size(0)
         print(f"Epoch {epoch+1}/{epochs}, Loss: {epoch_loss/len(train_X):.4f}")
 
-    # 테스트
+    # 테스트 BCE Loss
     model.eval()
     test_loss = 0
     with torch.no_grad():
@@ -160,7 +152,7 @@ def train_and_save_item_mlp(DB_PATH, JSON_PATH, MODEL_PATH,
     }, MODEL_PATH)
     print(f"모델 저장 완료: {MODEL_PATH}")
 
-    return model, valid_items, role2idx, num_roles, item_data
+    return model, valid_items, role2idx, num_roles, item_data, test_X, test_Y
 
 # ------------------------------
 # 모델 로드 함수
@@ -176,14 +168,12 @@ def load_item_model(model_path=MODEL_PATH):
     model.load_state_dict(checkpoint['model_state'])
     model.eval()
 
-    # item_data도 함께 로드
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     json_path = os.path.join(base_dir, "data", "item.json")
     with open(json_path, "r", encoding="utf-8") as f:
         item_data = json.load(f)
 
     return model, valid_items, role2idx, num_roles, item_data
-
 
 # ------------------------------
 # 추천 함수
@@ -193,8 +183,6 @@ def recommend_items(my_roles, enemy_roles, top_n=5, model=None, valid_items=None
     with torch.no_grad():
         scores = model(vec.unsqueeze(0)).squeeze()
         topk_indices = torch.topk(scores, top_n).indices.tolist()
-
-        # 아이템 코드, 이름
         top_items = [
             {
                 "id": int(valid_items[i]),
@@ -203,21 +191,57 @@ def recommend_items(my_roles, enemy_roles, top_n=5, model=None, valid_items=None
             for i in topk_indices
         ]
     return top_items
+
+# ------------------------------
+# Top-k Accuracy 평가 함수
+# ------------------------------
+def evaluate_topk(model, test_X, test_Y, top_k=5, batch_size=100):
+    model.eval()
+    loader = DataLoader(TensorDataset(test_X, test_Y), batch_size=batch_size)
+    hits, total = 0, 0
+
+    with torch.no_grad():
+        for bx, by in loader:
+            scores = model(bx)
+            topk_indices = torch.topk(scores, top_k, dim=1).indices
+            for i in range(bx.size(0)):
+                true_items = by[i].nonzero(as_tuple=True)[0]
+                pred_items = topk_indices[i]
+                if len(set(pred_items.tolist()) & set(true_items.tolist())) > 0:
+                    hits += 1
+                total += 1
+    topk_acc = hits / total
+    print(f"Top-{top_k} Hit Rate: {topk_acc:.4f}")
+    return topk_acc
+
 # ------------------------------
 # 실행 예시
 # ------------------------------
 if __name__ == "__main__":
-    #train_and_save_item_mlp(DB_PATH, JSON_PATH, MODEL_PATH)
+    # 학습 및 모델 저장
+    item_model, valid_items, role2idx, num_roles, item_data, test_X, test_Y = train_and_save_item_mlp(DB_PATH, JSON_PATH, MODEL_PATH)
 
-    item_model, valid_items, role2idx, num_roles, item_data = load_item_model()
-    my_roles = ["Fighter","Tank"]
+    # Top-5 Accuracy 평가
+    evaluate_topk(item_model, test_X, test_Y, top_k=5)
+
+    item_model, valid_items, role2idx, num_roles, item_data = load_item_model(MODEL_PATH)
+
+    # 샘플 추천
+    my_roles = ["Support","Tank"]
     enemy_roles = [
         ["Tank"],   
-        ["Mage"],   
-        ["Mage"],   
-        ["Mage"],          
-        ["Support", "Tank"]    
+        ["Assassin","Fighter"],   
+        ["Assassin"],   
+        ["Fighter","Assassin"],          
+        ["Support","Mage"]    
     ]
+    # enemy_roles = [
+    #     ["Fighter","Assassin"],   
+    #     ["Tank"],   
+    #     ["Mage","Support"],   
+    #     ["Marksman","Mage"],          
+    #     ["Support","Mage"]    
+    # ]
     top_items = recommend_items(
         my_roles, 
         enemy_roles, 
@@ -229,6 +253,4 @@ if __name__ == "__main__":
         item_data=item_data
     )
     print("추천 아이템:", top_items)
-
-
 # %%

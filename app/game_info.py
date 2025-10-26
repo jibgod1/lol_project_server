@@ -8,7 +8,7 @@ import json
 
 def game_info(match_id, tier, flag):
     api_key = config.API_KEY
-    ranked_queue_ids = [410, 420, 440]
+    ranked_queue_ids = [420]
     region = 'asia'
     
     url1 = f'https://{region}.api.riotgames.com/lol/match/v5/matches/{match_id}'
@@ -171,6 +171,11 @@ def info(match_id, match_data, match_info, flag):
             continue  # flag=ODD인데 짝수면 저장 안함
         elif flag=="EVEN" and id % 2 != 0:
             continue  # flag=EVEN인데 홀수면 저장 안함
+
+        opp_id = opponent_map.get(id, None)
+        if opp_id is None:
+            continue
+
         teamposition = player.get('teamPosition', 0)
         kills = player.get('kills', 0)
         deaths = player.get('deaths', 0)
@@ -198,10 +203,6 @@ def info(match_id, match_data, match_info, flag):
         early_d = early_kda[id]["deaths"]
         early_a = early_kda[id]["assists"]
         lane_cs = player.get('challenges', {}).get('laneMinionsFirst10Minutes', 0)
-
-        
-        # 상대와 비교
-        opp_id = opponent_map.get(id, None)
 
         my_champion = player.get("championName", "Unknown")
         opp_player = match_data['info']['participants'][opp_id - 1]

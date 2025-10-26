@@ -9,6 +9,10 @@ from sklearn.preprocessing import RobustScaler
 from sklearn.metrics import accuracy_score, classification_report
 import joblib
 import os
+import json
+import numpy as np
+import statsmodels.api as sm
+import pandas as pd
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -19,7 +23,9 @@ os.makedirs(DATA_DIR, exist_ok=True)
 # 1. 데이터 불러오기
 tiers = ["IRON","BRONZE","SILVER","GOLD","PLATINUM","EMERALD","DIAMOND"]
 lanes = ["TOP","JUNGLE","MIDDLE","BOTTOM","UTILITY"]
+tier_accuracies = {}
 for tier in tiers:
+    line_accuracies = {}
     for lane in lanes:
         db_path = os.path.join(DATA_DIR, "match_data.db")
         conn1 = sqlite3.connect(db_path)
@@ -81,6 +87,8 @@ for tier in tiers:
         # 7. 평가
         y_pred = model.predict(X_test_scaled)
         print(f"[{lane}] 라인 기준 정확도: {accuracy_score(y_test, y_pred):.4f}")
+
+        line_accuracies[lane] = round(accuracy_score(y_test, y_pred) * 100, 2)
         
         # 8. 특성 중요도 확인
         importance = model.coef_[0]
@@ -90,7 +98,17 @@ for tier in tiers:
         # 9. 저장
         joblib.dump(model, os.path.join(DATA_DIR, f"model_{lane.lower()}_{tier}.pkl"))
         joblib.dump(scaler, os.path.join(DATA_DIR, f"scaler_{lane.lower()}_{tier}.pkl"))
+    
+    avg_acc = np.mean(list(line_accuracies.values()))
+    tier_accuracies[tier] = {
+        "lane_accuracies": line_accuracies,
+        "avg_accuracy": round(avg_acc, 2)
+    }
+json_path = os.path.join(DATA_DIR, "model_accuracy_by_tier.json")
+with open(json_path, "w", encoding="utf-8") as f:
+    json.dump(tier_accuracies, f, indent=4, ensure_ascii=False)
 
+print(f"\n✅ 티어별 모델 정확도 저장 완료: {json_path}")
 
 # %%
 
