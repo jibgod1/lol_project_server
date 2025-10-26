@@ -64,248 +64,213 @@ def generate_feedback(positive, negative, below_avg):
         "below_avg": []
     }
 
-    # positive 피드백
+    # feature: {coef>0일 때 문구, coef<=0일 때 문구} 딕셔너리
+    positive_feedback_dict = {
+        "diff_early_k": [
+            "라인전에서 킬 우위를 점할때가 많습니다.",
+            "팀원의 성장을 위해 킬을 양보했습니다."
+        ],
+        "diff_early_d": [
+            "추반 적절한 희생으로 팀원대신 사망하여 팀원의 성장을 도왔습니다.",
+            "라인전에서의 데스가 낮습니다. 상대의 성장을 효과적으로 억제했습니다."
+        ],
+        "diff_early_a": [
+            "초반 교전에서 어시스트를 통해 이득을 취했습니다.",
+            "초반 교전을 피함으로서 후반을 도모했습니다."
+        ],
+        "diff_lane_cs": [
+            "견재를 통해 cs차이로 성장차이를 효과적으로 벌렸습니다.",
+            "팀원에게 cs를 양보하여 팀원의 성장을 도왔습니다."
+        ],
+        "late_kills": [
+            "중후반 교전에서 킬을 통해 효과적으로 성장했습니다.",
+            "중후반 교전에서 킬 양보를 통해 팀원 성장에 기여했습니다."
+        ],
+        "late_deaths": [
+            "중후반 교전에서 팀원 대신 희생하여 팀을 승리로 이끌었습니다",
+            "중후반 교전에서 잘 생존하여 팀을 승리로 이끌었습니다."
+        ],
+        "late_assists": [
+            "중후반 교전에서 어시스트를 통해 팀원의 성장을 도왔습니다.",
+            "중후반 교전보다는 운영을 통해 승리를 쟁취했습니다."
+        ],
+        "solo_kills": [
+            "1대1 상황에서 상대를 제압했습니다.",
+            "1대1 상황을 피하며 운영했습니다."
+        ],
+        "enemyjungleminionkills": [
+            "상대 정글을 빼먹으며 효과적으로 성장했습니다.",
+            "상대 정글에 들어가지 않으며 안정적으로 플레이했습니다."
+        ],
+        "vision_score": [
+            "상대의 위치를 잘 파악할 수 있도록 와드를 설치했습니다.",
+            "와드구매보다는 성장에 집중했습니다."
+        ],
+        "wards_placed": [
+            "와드 쿨타임마다 와드를 설치했습니다.",
+            "시야 확보를 위한 무리한 와딩을 지양했습니다."
+        ],
+        "dragon_participation": [
+            "드래곤 오브젝트에 적극적으로 참여했습니다.",
+            "드래곤 오브젝트에 집착하지 않고 다른곳에서 이득을 취했습니다."
+        ],
+        "dragon_deaths": [
+            "드래곤 오브젝트 타이밍에 어그로를 끌며 팀원이 이득을 볼 수 있도록 도와주었습니다.",
+            "드래곤 오브젝트 타이밍에 죽지 않고 안정적이 플레이를 보여주었습니다."
+        ],
+        "elder_dragon_participation": [
+            "장로 드래곤 오브젝트에 적극적으로 참여했습니다.",
+            "장로 드래곤 오브젝트에 집착하지 않고 다른곳에서 이득을 취했습니다."
+        ],
+        "elder_dragon_deaths": [
+            "장로 드래곤 오브젝트 타이밍에 어그로를 끌며 팀원이 이득을 볼 수 있도록 도와주었습니다.",
+            "장로 드래곤 오브젝트 타이밍에 죽지 않고 안정적이 플레이를 보여주었습니다."
+        ],
+        "baron_nashor_participation": [
+            "바론 오브젝트에 적극적으로 참여했습니다.",
+            "바론 오브젝트에 집착하지 않고 다른곳에서 이득을 취했습니다."
+        ],
+        "baron_nashor_deaths": [
+            "바론 오브젝트 타이밍에 어그로를 끌며 팀원이 이득을 볼 수 있도록 도와주었습니다.",
+            "바론 오브젝트 타이밍에 죽지 않고 안정적이 플레이를 보여주었습니다."
+        ],
+        "riftherald_participation": [
+            "전령 오브젝트에 적극적으로 참여했습니다.",
+            "전령 오브젝트에 집착하지 않고 다른곳에서 이득을 취했습니다."
+        ],
+        "riftherald_deaths": [
+            "전령 오브젝트 타이밍에 어그로를 끌며 팀원이 이득을 볼 수 있도록 도와주었습니다.",
+            "전령 오브젝트 타이밍에 죽지 않고 안정적이 플레이를 보여주었습니다."
+        ],
+        "horde_participation": [
+            "유충 오브젝트에 적극적으로 참여했습니다.",
+            "유충 오브젝트에 집착하지 않고 다른곳에서 이득을 취했습니다."
+        ],
+        "horde_deaths": [
+            "유충 오브젝트 타이밍에 어그로를 끌며 팀원이 이득을 볼 수 있도록 도와주었습니다.",
+            "유충 오브젝트 타이밍에 죽지 않고 안정적이 플레이를 보여주었습니다."
+        ],
+        "atakhan_participation": [
+            "아타칸 오브젝트에 적극적으로 참여했습니다.",
+            "아타칸 오브젝트에 집착하지 않고 다른곳에서 이득을 취했습니다."
+        ],
+        "atakhan_deaths": [
+            "아타칸 오브젝트 타이밍에 어그로를 끌며 팀원이 이득을 볼 수 있도록 도와주었습니다.",
+            "아타칸 오브젝트 타이밍에 죽지 않고 안정적이 플레이를 보여주었습니다."
+        ]
+    }
+
+    negative_feedback_dict = {
+        "diff_early_k": [
+            "라인전에서 킬을 많이 못먹어 불리한 상황이 많습니다.",
+            "가능하다면 라인전에서 킬을 먹기보다는 양보해주는게 좋습니다."
+        ],
+        "diff_early_d": [
+            "팀원을 위해 희생하는게 좋을때도 있습니다. 나의 죽음으로 팀원들을 살릴수 있다면 여러명을 살리는 방향을 택하도록 합시다.",
+            "라인전 데스가 높은편입니다. 킬각을 인지하고 위험할때는 귀한을 하도록 합시다."
+        ],
+        "diff_early_a": [
+            "초반 교전 참여율이 낮습니다. 로밍이나 정글을 적극적으로 도와봅시다.",
+            "킬 양보가 과도하여 본인 성장이 늦어졌습니다."
+        ],
+        "diff_lane_cs": [
+            "라인전 cs차이가 많이납니다. 불리하더라고 라인관리를 통해 최대한 cs를 챙기도록 합시다.",
+            "라인전 cs가 너무 높습니다. cs 양보를 통해 팀원 성장을 도와주도록 합시다."
+        ],
+        "late_kills": [
+            "중후반 킬이 낮습니다. 적절한 교전 참여와 킬 캐치로 성장을 하도록 합시다.",
+            "중후반 킬이 높습니다. 킬 양보를 통해 다른 팀원의 성장을 돕도록 합시다."
+        ],
+        "late_deaths": [
+            "중후반 데스가 적습니다. 팀원을 살릴수 있다면 적극적으로 싸워 팀원들 살리고 대신 죽도록 합시다.",
+            "중후반 데스가 많습니다. 맵리딩을 통해 상대 위치를 예측하고 위험한 곳은 팀원과 같이 행동하도록 합시다."
+        ],
+        "late_assists": [
+            "중후반 어시스트가 적습니다. 교전 참여를 통해 어시스트를 올리고 싸움에서 승리할 수 있도록 합시다.",
+            "중후반 어시스트가 많습니다. 교전 참여보다는 운영을 통해 게임을 풀어갈 수 있도록 합시다."
+        ],
+        "solo_kills": [
+            "솔로킬이 적습니다. 1대1 상황에서 이길수 있을거같다면 적극적으로 싸워보도록 합시다.",
+            "1대1 상황이 많습니다. 팀원들과 같이 행동하고 가능하면 킬을 양보하도록 합시다."
+        ],
+        "enemyjungleminionkills": [
+            "상대 정글몹을 거의 신경쓰지 않고있습니다. 가능하다면 상대 정글을 빼먹으며 성장하도록 합시다.",
+            "상대 정글몹에 너무 신경을 많이쓰고 있습니다. 상대 정글을 들어가기 보다는 우리 정글에서 안정적으로 플레이 하도록 합시다."
+        ],
+        "vision_score": [
+            "시야 점수가 낮습니다. 적절한 위치에 와딩을 통해 상대방 위치를 파악하도록 합시다.",
+            "시야 점수가 높습니다. 와딩을 위해 너무 많은 골드를 소모하지 않도록 합시다."
+        ],
+        "wards_placed": [
+            "와드를 많이 사용하지 않습니다. 장신구 와들 배치를 소홀히 하지 않도록 합시다.",
+            "너무 많은 와드를 사용하고 있습니다. 와드를 남용하지 말고 와드를 구매하는데 너무 많은 골드를 소모하지 않도록 합시다."
+        ],
+        "dragon_participation": [
+            "드래곤 오브젝트 참여율이 낮습니다. 가능하다면 드래곤 오브젝트 싸움에 참가하도록 합시다.",
+            "드래곤 오브젝트 참여율이 높습니다. 무리하게 드래곤 오브젝트 싸움에 참여하지 않아도 되니 다른곳에서 이득을 챙기도록 합시다."
+        ],
+        "dragon_deaths": [
+            "드래곤 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.",
+            "드래곤 오브젝트 타이밍에 죽는 경우가 많습니다. 드래곤 오브젝트 타이밍에 안정적으로 플레이하도록 합시다."
+        ],
+        "elder_dragon_participation": [
+            "장로 드래곤 오브젝트 참여율이 낮습니다. 가능하다면 장로 드래곤 오브젝트 싸움에 참가하도록 합시다.",
+            "장로 드래곤 오브젝트 참여율이 높습니다. 무리하게 장로 드래곤 오브젝트 싸움에 참여하지 않아도 되니 다른곳에서 이득을 챙기도록 합시다."
+        ],
+        "elder_dragon_deaths": [
+            "장로 드래곤 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.",
+            "장로 드래곤 오브젝트 타이밍에 죽는 경우가 많습니다. 드래곤 오브젝트 타이밍에 안정적으로 플레이하도록 합시다."
+        ],
+        "baron_nashor_participation": [
+            "바론 오브젝트 참여율이 낮습니다. 가능하다면 바론 오브젝트 싸움에 참가하도록 합시다.",
+            "바론 오브젝트 참여율이 높습니다. 무리하게 바론 오브젝트 싸움에 참여하지 않아도 되니 다른곳에서 이득을 챙기도록 합시다."
+        ],
+        "baron_nashor_deaths": [
+            "바론 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.",
+            "바론 오브젝트 타이밍에 죽는 경우가 많습니다. 사이드 운영이나 시야 체크를 안정적으로 하도록 합시다."
+        ],
+        "riftherald_participation": [
+            "전령 오브젝트 참여율이 낮습니다. 가능하다면 전령 오브젝트 싸움에 참가하도록 합시다.",
+            "전령 오브젝트 참여율이 높습니다. 무리하게 전령 오브젝트 싸움에 참여하지 않아도 되니 다른곳에서 이득을 챙기도록 합시다."
+        ],
+        "riftherald_deaths": [
+            "전령 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.",
+            "전령 오브젝트 타이밍에 죽는 경우가 많습니다. 전령 오브젝트 타이밍에 안정적으로 플레이하도록 합시다."
+        ],
+        "horde_participation": [
+            "유충 오브젝트 참여율이 낮습니다. 가능하다면 드래곤 오브젝트 싸움에 참가하도록 합시다.",
+            "유충 오브젝트 참여율이 높습니다. 무리하게 유충 오브젝트 싸움에 참여하지 않아도 되니 다른곳에서 이득을 챙기도록 합시다."
+        ],
+        "horde_deaths": [
+            "유충 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.",
+            "유충 오브젝트 타이밍에 죽는 경우가 많습니다. 유충 오브젝트 타이밍에 안정적으로 플레이하도록 합시다."
+        ],
+        "atakhan_participation": [
+            "아타칸 오브젝트 참여율이 낮습니다. 가능하다면 아타칸 오브젝트 싸움에 참가하도록 합시다.",
+            "아타칸 오브젝트 참여율이 높습니다. 무리하게 아타칸 오브젝트 싸움에 참여하지 않아도 되니 다른곳에서 이득을 챙기도록 합시다."
+        ],
+        "atakhan_deaths": [
+            "아타칸 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.",
+            "아타칸 오브젝트 타이밍에 죽는 경우가 많습니다. 사이드 운영이나 시야 체크를 안정적으로 하도록 합시다."
+        ]
+    }
+
+    # positive 적용
     for feat in positive:
         f = feat["feature"]
         coef = feat.get("coef", 1)
-        if f == "diff_early_k":
-            if coef > 0:
-                feedback["positive"].append("라인전에서 킬 우위를 점할때가 많습니다.")
-            else:
-                feedback["positive"].append("팀원의 성장을 위해 킬을 양보했습니다.")
-        elif f == "diff_early_d":
-            if coef > 0:
-                feedback["positive"].append("추반 적절한 희생으로 팀원대신 사망하여 팀원의 성장을 도왔습니다.")
-            else:
-                feedback["positive"].append("라인전에서의 데스가 낮습니다. 상대의 성장을 효과적으로 억제했습니다.")
-        elif f == "diff_early_a":
-            if coef > 0:
-                feedback["positive"].append("초반 교전에서 어시스트를 통해 이득을 취했습니다.")
-            else:
-                feedback["positive"].append("초반 교전을 피함으로서 후반을 도모했습니다.")
-        elif f == "diff_lane_cs":
-            if coef > 0:
-                feedback["positive"].append("견재를 통해 cs차이로 성장차이를 효과적으로 벌렸습니다.")
-            else:
-                feedback["positive"].append("팀원에게 cs를 양보하여 팀원의 성장을 도왔습니다.")
-        elif f == "late_kills":
-            if coef > 0:
-                feedback["positive"].append("중후반 교전에서 킬을 통해 효과적으로 성장했습니다.")
-            else:
-                feedback["positive"].append("중후반 교전에서 킬 양보를 통해 팀원 성장에 기여했습니다.")
-        elif f == "late_deaths":
-            if coef > 0:
-                feedback["positive"].append("중후반 교전에서 팀원 대신 희생하여 팀을 승리로 이끌었습니다")
-            else:
-                feedback["positive"].append("중후반 교전에서 잘 생존하여 팀을 승리로 이끌었습니다.")
-        elif f == "late_assists":
-            if coef > 0:
-                feedback["positive"].append("중후반 교전에서 어시스트를 통해 팀원의 성장을 도왔습니다.")
-            else:
-                feedback["positive"].append("중후반 교전보다는 운영을 통해 승리를 쟁취했습니다.")
-        elif f == "solo_kills":
-            if coef > 0:
-                feedback["positive"].append("1대1 상황에서 상대를 제압했습니다.")
-            else:
-                feedback["positive"].append("1대1 상황을 피하며 운영했습니다.")
-        elif f == "enemyjungleminionkills":
-            if coef > 0:
-                feedback["positive"].append("상대 정글을 빼먹으며 효과적으로 성장했습니다.")
-            else:
-                feedback["positive"].append("상대 정글에 들어가지 않으며 안정적으로 플레이했습니다.")
-        elif f == "vision_score":
-            if coef > 0:
-                feedback["positive"].append("상대의 위치를 잘 파악할 수 있도록 와드를 설치했습니다.")
-            else:
-                feedback["positive"].append("와드구매보다는 성장에 집중했습니다.")
-        elif f == "wards_placed":
-            if coef > 0:
-                feedback["positive"].append("와드 쿨타임마다 와드를 설치했습니다.")
-            else:
-                feedback["positive"].append("시야 확보를 위한 무리한 와딩을 지양했습니다.")
-        elif f == "dragon_participation":
-            if coef > 0:
-                feedback["positive"].append("드래곤 오브젝트에 적극적으로 참여했습니다.")
-            else:
-                feedback["positive"].append("드래곤 오브젝트에 집착하지 않고 다른곳에서 이득을 취했습니다.")
-        elif f == "dragon_deaths":
-            if coef > 0:
-                feedback["positive"].append("드래곤 오브젝트 타이밍에 어그로를 끌며 팀원이 이득을 볼 수 있도록 도와주었습니다.")
-            else:
-                feedback["positive"].append("드래곤 오브젝트 타이밍에 죽지 않고 안정적이 플레이를 보여주었습니다.")
-        elif f == "elder_dragon_participation":
-            if coef > 0:
-                feedback["positive"].append("장로 드래곤 오브젝트에 적극적으로 참여했습니다.")
-            else:
-                feedback["positive"].append("장로 드래곤 오브젝트에 집착하지 않고 다른곳에서 이득을 취했습니다.")
-        elif f == "elder_dragon_deaths":
-            if coef > 0:
-                feedback["positive"].append("장로 드래곤 오브젝트 타이밍에 어그로를 끌며 팀원이 이득을 볼 수 있도록 도와주었습니다.")
-            else:
-                feedback["positive"].append("장로 드래곤 오브젝트 타이밍에 죽지 않고 안정적이 플레이를 보여주었습니다.")
-        elif f == "baron_nashor_participation":
-            if coef > 0:
-                feedback["positive"].append("바론 오브젝트에 적극적으로 참여했습니다.")
-            else:
-                feedback["positive"].append("바론 오브젝트에 집착하지 않고 다른곳에서 이득을 취했습니다.")
-        elif f == "baron_nashor_deaths":
-            if coef > 0:
-                feedback["positive"].append("바론 오브젝트 타이밍에 어그로를 끌며 팀원이 이득을 볼 수 있도록 도와주었습니다.")
-            else:
-                feedback["positive"].append("바론 오브젝트 타이밍에 죽지 않고 안정적이 플레이를 보여주었습니다.")
-        elif f == "riftherald_participation":
-            if coef > 0:
-                feedback["positive"].append("전령 오브젝트에 적극적으로 참여했습니다.")
-            else:
-                feedback["positive"].append("전령 오브젝트에 집착하지 않고 다른곳에서 이득을 취했습니다.")
-        elif f == "riftherald_deaths":
-            if coef > 0:
-                feedback["positive"].append("전령 오브젝트 타이밍에 어그로를 끌며 팀원이 이득을 볼 수 있도록 도와주었습니다.")
-            else:
-                feedback["positive"].append("전령 오브젝트 타이밍에 죽지 않고 안정적이 플레이를 보여주었습니다.")
-        elif f == "horde_participation":
-            if coef > 0:
-                feedback["positive"].append("유충 오브젝트에 적극적으로 참여했습니다.")
-            else:
-                feedback["positive"].append("유충 오브젝트에 집착하지 않고 다른곳에서 이득을 취했습니다.")
-        elif f == "horde_deaths":
-            if coef > 0:
-                feedback["positive"].append("유충 오브젝트 타이밍에 어그로를 끌며 팀원이 이득을 볼 수 있도록 도와주었습니다.")
-            else:
-                feedback["positive"].append("유충 오브젝트 타이밍에 죽지 않고 안정적이 플레이를 보여주었습니다.")
-        elif f == "atakhan_participation":
-            if coef > 0:
-                feedback["positive"].append("아타칸 오브젝트에 적극적으로 참여했습니다.")
-            else:
-                feedback["positive"].append("아타칸 오브젝트에 집착하지 않고 다른곳에서 이득을 취했습니다.")
-        elif f == "atakhan_deaths":
-            if coef > 0:
-                feedback["positive"].append("아타칸 오브젝트 타이밍에 어그로를 끌며 팀원이 이득을 볼 수 있도록 도와주었습니다.")
-            else:
-                feedback["positive"].append("아타칸 오브젝트 타이밍에 죽지 않고 안정적이 플레이를 보여주었습니다.")
+        if f in positive_feedback_dict:
+            feedback["positive"].append(positive_feedback_dict[f][0 if coef > 0 else 1])
 
-    # negative 피드백
+    # negative 적용
     for feat in negative:
         f = feat["feature"]
         coef = feat.get("coef", 1)
-        if f == "diff_early_k":
-            if coef > 0:
-                feedback["negative"].append("라인전에서 킬을 많이 못먹어 불리한 상황이 많습니다.")
-            else:
-                feedback["negative"].append("가능하다면 라인전에서 킬을 먹기보다는 양보해주는게 좋습니다.")
-        elif f == "diff_early_d":
-            if coef > 0:
-                feedback["negative"].append("팀원을 위해 희생하는게 좋을때도 있습니다. 나의 죽음으로 팀원들을 살릴수 있다면 여러명을 살리는 방향을 택하도록 합시다.")
-            else:
-                feedback["negative"].append("라인전 데스가 높은편입니다. 킬각을 인지하고 위험할때는 귀한을 하도록 합시다.")
-        elif f == "diff_early_a":
-            if coef > 0:
-                feedback["negative"].append("초반 교전 참여율이 낮습니다. 로밍이나 정글을 적극적으로 도와봅시다.")
-            else:
-                feedback["negative"].append("킬 양보가 과도하여 본인 성장이 늦어졌습니다.")
-        elif f == "diff_lane_cs":
-            if coef > 0:
-                feedback["negative"].append("라인전 cs차이가 많이납니다. 불리하더라고 라인관리를 통해 최대한 cs를 챙기도록 합시다.")
-            else:
-                feedback["negative"].append("라인전 cs가 너무 높습니다. cs 양보를 통해 팀원 성장을 도와주도록 합시다.")
-        elif f == "late_kills":
-            if coef > 0:
-                feedback["negative"].append("중후반 킬이 낮습니다. 적절한 교전 참여와 킬 캐치로 성장을 하도록 합시다.")
-            else:
-                feedback["negative"].append("중후반 킬이 높습니다. 킬 양보를 통해 다른 팀원의 성장을 돕도록 합시다.")
-        elif f == "late_deaths":
-            if coef > 0:
-                feedback["negative"].append("중후반 데스가 적습니다. 팀원을 살릴수 있다면 적극적으로 싸워 팀원들 살리고 대신 죽도록 합시다.")
-            else:
-                feedback["negative"].append("중후반 데스가 많습니다. 맵리딩을 통해 상대 위치를 예측하고 위험한 곳은 팀원과 같이 행동하도록 합시다.")
-        elif f == "late_assists":
-            if coef > 0:
-                feedback["negative"].append("중후반 어시스트가 적습니다. 교전 참여를 통해 어시스트를 올리고 싸움에서 승리할 수 있도록 합시다.")
-            else:
-                feedback["negative"].append("중후반 어시스트가 많습니다. 교전 참여보다는 운영을 통해 게임을 풀어갈 수 있도록 합시다.")
-        elif f == "solo_kills":
-            if coef > 0:
-                feedback["negative"].append("솔로킬이 적습니다. 1대1 상황에서 이길수 있을거같다면 적극적으로 싸워보도록 합시다.")
-            else:
-                feedback["negative"].append("1대1 상황이 많습니다. 팀원들과 같이 행동하고 가능하면 킬을 양보하도록 합시다.")
-        elif f == "enemyjungleminionkills":
-            if coef > 0:
-                feedback["negative"].append("상대 정글몹을 거의 신경쓰지 않고있습니다. 가능하다면 상대 정글을 빼먹으며 성장하도록 합시다.")
-            else:
-                feedback["negative"].append("상대 정글몹에 너무 신경을 많이쓰고 있습니다. 상대 정글을 들어가기 보다는 우리 정글에서 안정적으로 플레이 하도록 합시다.")
-        elif f == "vision_score":
-            if coef > 0:
-                feedback["negative"].append("시야 점수가 낮습니다. 적절한 위치에 와딩을 통해 상대방 위치를 파악하도록 합시다.")
-            else:
-                feedback["negative"].append("시야 점수가 높습니다. 와딩을 위해 너무 많은 골드를 소모하지 않도록 합시다.")
-        elif f == "wards_placed":
-            if coef > 0:
-                feedback["negative"].append("와드를 많이 사용하지 않습니다. 장신구 와들 배치를 소홀히 하지 않도록 합시다.")
-            else:
-                feedback["negative"].append("너무 많은 와드를 사용하고 있습니다. 와드를 남용하지 말고 와드를 구매하는데 너무 많은 골드를 소모하지 않도록 합시다.")
-        elif f == "dragon_participation":
-            if coef > 0:
-                feedback["negative"].append("드래곤 오브젝트 참여율이 낮습니다. 가능하다면 드래곤 오브젝트 싸움에 참가하도록 합시다.")
-            else:
-                feedback["negative"].append("드래곤 오브젝트 참여율이 높습니다. 무리하게 드래곤 오브젝트 싸움에 참여하지 않아도 되니 다른곳에서 이득을 챙기도록 합시다.")
-        elif f == "dragon_deaths":
-            if coef > 0:
-                feedback["negative"].append("드래곤 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.")
-            else:
-                feedback["negative"].append("드래곤 오브젝트 타이밍에 죽는 경우가 많습니다. 드래곤 오브젝트 타이밍에 안정적으로 플레이하도록 합시다.")
-        elif f == "elder_dragon_participation":
-            if coef > 0:
-                feedback["negative"].append("장로 드래곤 오브젝트 참여율이 낮습니다. 가능하다면 장로 드래곤 오브젝트 싸움에 참가하도록 합시다.")
-            else:
-                feedback["negative"].append("장로 드래곤 오브젝트 참여율이 높습니다. 무리하게 장로 드래곤 오브젝트 싸움에 참여하지 않아도 되니 다른곳에서 이득을 챙기도록 합시다.")
-        elif f == "elder_dragon_deaths":
-            if coef > 0:
-                feedback["negative"].append("장로 드래곤 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.")
-            else:
-                feedback["negative"].append("장로 드래곤 오브젝트 타이밍에 죽는 경우가 많습니다. 드래곤 오브젝트 타이밍에 안정적으로 플레이하도록 합시다.")
-        elif f == "baron_nashor_participation":
-            if coef > 0:
-                feedback["negative"].append("바론 오브젝트 참여율이 낮습니다. 가능하다면 바론 오브젝트 싸움에 참가하도록 합시다.")
-            else:
-                feedback["negative"].append("바론 오브젝트 참여율이 높습니다. 무리하게 바론 오브젝트 싸움에 참여하지 않아도 되니 다른곳에서 이득을 챙기도록 합시다.")
-        elif f == "baron_nashor_deaths":
-            if coef > 0:
-                feedback["negative"].append("바론 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.")
-            else:
-                feedback["negative"].append("바론 오브젝트 타이밍에 죽는 경우가 많습니다. 사이드 운영이나 시야 체크를 안정적으로 하도록 합시다.")
-        elif f == "riftherald_participation":
-            if coef > 0:
-                feedback["negative"].append("전령 오브젝트 참여율이 낮습니다. 가능하다면 전령 오브젝트 싸움에 참가하도록 합시다.")
-            else:
-                feedback["negative"].append("전령 오브젝트 참여율이 높습니다. 무리하게 전령 오브젝트 싸움에 참여하지 않아도 되니 다른곳에서 이득을 챙기도록 합시다.")
-        elif f == "riftherald_deaths":
-            if coef > 0:
-                feedback["negative"].append("전령 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.")
-            else:
-                feedback["negative"].append("전령 오브젝트 타이밍에 죽는 경우가 많습니다. 전령 오브젝트 타이밍에 안정적으로 플레이하도록 합시다.")
-        elif f == "horde_participation":
-            if coef > 0:
-                feedback["negative"].append("유충 오브젝트 참여율이 낮습니다. 가능하다면 드래곤 오브젝트 싸움에 참가하도록 합시다.")
-            else:
-                feedback["negative"].append("유충 오브젝트 참여율이 높습니다. 무리하게 유충 오브젝트 싸움에 참여하지 않아도 되니 다른곳에서 이득을 챙기도록 합시다.")
-        elif f == "horde_deaths":
-            if coef > 0:
-                feedback["negative"].append("유충 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.")
-            else:
-                feedback["negative"].append("유충 오브젝트 타이밍에 죽는 경우가 많습니다. 유충 오브젝트 타이밍에 안정적으로 플레이하도록 합시다.")
-        elif f == "atakhan_participation":
-            if coef > 0:
-                feedback["negative"].append("아타칸 오브젝트 참여율이 낮습니다. 가능하다면 아타칸 오브젝트 싸움에 참가하도록 합시다.")
-            else:
-                feedback["negative"].append("아타칸 오브젝트 참여율이 높습니다. 무리하게 아타칸 오브젝트 싸움에 참여하지 않아도 되니 다른곳에서 이득을 챙기도록 합시다.")
-        elif f == "atakhan_deaths":
-            if coef > 0:
-                feedback["negative"].append("아타칸 오브젝트 타이밍에 너무 안정적으로 플레이합니다. 죽더라도 오브젝트를 챙기면 이득이기에 과감하게 플레이해도록 합시다.")
-            else:
-                feedback["negative"].append("아타칸 오브젝트 타이밍에 죽는 경우가 많습니다. 사이드 운영이나 시야 체크를 안정적으로 하도록 합시다.")
-
+        if f in negative_feedback_dict:
+            feedback["negative"].append(negative_feedback_dict[f][0 if coef > 0 else 1])
 
     return feedback
+
 
 
 
@@ -413,195 +378,93 @@ def create_comment(blue_result, red_result, tier, team):
             "comments": comments
         }
 
-    # 🔹 블루/레드 팀 결과 비교 및 리턴
-    if blue_result["player"]["lane"] not in ("JUNGLE", "UTILITY"):
-        if blue_result["not_enough_matches"] == True:
-            blue_result["player"]["riotId"] = blue_result["player"]["riotId"] + "(정보 부족)"
-        if red_result["not_enough_matches"] == True:
-            red_result["player"]["riotId"] = red_result["player"]["riotId"] + "(정보 부족)"
-        comparisons = {
-            "early_trade_result_3min":[],
-            "early_trade_result_8min":[], 
-            "need_recall_8min":[],
-            "lane_cs_result_10min":[], 
-            "lane_gold_result_10min":[], 
-            "midgame_gold_result":[],
-            "jungle":[], 
-            "TOP":[], "MID":[], "BOT":[], "OTHER":[],
-        }
-        winrate = 0 
-        if team == "blue":
-            blue_feedback = winrate_calc(blue_result, tier)
-            red_feedback = winrate_calc(red_result, tier)
-            if blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] > 0.2:
-                comparisons['early_trade_result_3min'].append("상대방 초반 딜교에서 우위를 가져갈 확률이 높습니다.")
-            elif blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] < -0.2:
-                comparisons['early_trade_result_3min'].append("라인전 초반 딜교에서 불리한 확률이 높습니다.")
-            else:
-                comparisons['early_trade_result_3min'].append("라인전 초반 비등비등할 확률이 높습니다.")
-            if blue_result['need_recall_8min'] < 0.5:
-                comparisons['need_recall_8min'].append("8분 오브젝트 타이밍에 정비 혹은 체력 관리가 필요해보입니다.")
-            elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] > 0.2:
-                comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 우위를 가져갈 확률이 높습니다.")
-            elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] < -0.2:
-                comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 불리한 확률이 높습니다.")
-            else:
-                comparisons['early_trade_result_8min'].append("라인전 중반 비등비등할 확률이 높습니다.")
-            if blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] > 0.2:
-                comparisons['lane_cs_result_10min'].append("라인전 중반 유의미한 cs차이를 낼 확률이 높습니다.")
-            elif blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] < -0.2:
-                comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 밀릴 확률이 높습니다.")
-            else:
-                comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 비슷할 확률이 높습니다.")
-            if blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] > 0.2:
-                comparisons['lane_gold_result_10min'].append("라인전 중반 유의미한 골드차이를 낼 확률이 높습니다.")
-            elif blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] < -0.2:
-                comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 밀릴 확률이 높습니다.")
-            else:
-                comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 비슷할 확률이 높습니다.")
-            if blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] > 0.2:
-                comparisons['midgame_gold_result'].append("게임 중반 유의미한 골드차이를 낼 확률이 높습니다.")
-            elif blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] < -0.2:
-                comparisons['midgame_gold_result'].append("게임 중반 골드가 밀릴 확률이 높습니다.")
-            else:
-                comparisons['midgame_gold_result'].append("게임 중반 골드가 비슷할 확률이 높습니다.")
-            comparisons['jungle'].append(f"최근 10게임 라인전 중 갱으로 {blue_result['opp_jungle']}번 사망했습니다.\n"
-                                        f"최근 10게임 상대방 라이너는 갱으로 {red_result['my_jungle']}번 킬을 했습니다.")
-            comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {red_result['TOP'][0]}킬을 기록하고 {red_result['TOP'][1]}데스를 기록했습니다.")
-            comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {red_result['MID'][0]}킬을 기록하고 {red_result['MID'][1]}데스를 기록했습니다.")
-            comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {red_result['BOT'][0]}킬을 기록하고 {red_result['BOT'][1]}데스를 기록했습니다.")
-            comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {red_result['OTHER'][0]}킬을 기록하고 {red_result['OTHER'][1]}데스를 기록했습니다.")
-            comparisons['TOP'].append(f"아군 라이너는 탑에서 평균 {blue_result['TOP'][0]}킬을 기록하고 {blue_result['TOP'][1]}데스를 기록했습니다.")
-            comparisons['MID'].append(f"아군 라이너는 미드에서 평균 {blue_result['MID'][0]}킬을 기록하고 {blue_result['MID'][1]}데스를 기록했습니다.")
-            comparisons['BOT'].append(f"아군 라이너는 바텀에서 평균 {blue_result['BOT'][0]}킬을 기록하고 {blue_result['BOT'][1]}데스를 기록했습니다.")
-            comparisons['OTHER'].append(f"아군 라이너는 정글에서 평균 {blue_result['OTHER'][0]}킬을 기록하고 {blue_result['OTHER'][1]}데스를 기록했습니다.")
-            winrate = blue_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
+    def compare_value(a, b, thresholds=(0.2, -0.2)):
+        """두 값 비교 → 우위/불리/비등"""
+        upper, lower = thresholds
+        if a - b > upper:
+            return "우위"
+        elif a - b < lower:
+            return "불리"
         else:
-            red_feedback = winrate_calc(red_result, tier)
-            blue_feedback = winrate_calc(blue_result, tier)
-            if blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] < -0.2:
-                comparisons['early_trade_result_3min'].append("라인전 초반 딜교에서 우위를 가져갈 확률이 높습니다.")
-            elif blue_result['early_trade_result_3min'] - red_result['early_trade_result_3min'] > 0.2:
-                comparisons['early_trade_result_3min'].append("라인전 초반 딜교에서 불리한 확률이 높습니다.")
-            else:
-                comparisons['early_trade_result_3min'].append("라인전 초반 비등비등할 확률이 높습니다.")
-            if blue_result['need_recall_8min'] < 0.5:
-                comparisons['need_recall_8min'].append("8분 오브젝트 타이밍 이전에 정비가 필요해보입니다.")
-            elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] < -0.2:
-                comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 우위를 가져갈 확률이 높습니다.")
-            elif blue_result['early_trade_result_8min'] - red_result['early_trade_result_8min'] > 0.2:
-                comparisons['early_trade_result_8min'].append("라인전 중반 딜교에서 불리한 확률이 높습니다.")
-            else:
-                comparisons['early_trade_result_8min'].append("라인전 중반 비등비등할 확률이 높습니다.")
-            if blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] < -0.2:
-                comparisons['lane_cs_result_10min'].append("라인전 중반 유의미한 cs차이를 낼 확률이 높습니다.")
-            elif blue_result['lane_cs_result_10min'] - red_result['lane_cs_result_10min'] > 0.2:
-                comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 밀릴 확률이 높습니다.")
-            else:
-                comparisons['lane_cs_result_10min'].append("라인전 중반 cs가 비슷할 확률이 높습니다.")
-            if blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] < -0.2:
-                comparisons['lane_gold_result_10min'].append("라인전 중반 유의미한 골드차이를 낼 확률이 높습니다.")
-            elif blue_result['lane_gold_result_10min'] - red_result['lane_gold_result_10min'] > 0.2:
-                comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 밀릴 확률이 높습니다.")
-            else:
-                comparisons['lane_gold_result_10min'].append("라인전 중반 골드가 비슷할 확률이 높습니다.")
-            if blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] < -0.2:
-                comparisons['midgame_gold_result'].append("게임 중반 유의미한 골드차이를 낼 확률이 높습니다.")
-            elif blue_result['midgame_gold_result'] - red_result['midgame_gold_result'] > 0.2:
-                comparisons['midgame_gold_result'].append("게임 중반 골드가 밀릴 확률이 높습니다.")
-            else:
-                comparisons['midgame_gold_result'].append("게임 중반 골드가 비슷할 확률이 높습니다.")
-            comparisons['jungle'].append(f"최근 10게임 우리팀 라이너는 갱으로 {red_result['opp_jungle']}번 사망했습니다."
-                                        f"최근 10게임 우리팀 라이너는 갱으로 {blue_result['my_jungle']}번 킬을 했습니다.")
-            comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {blue_result['TOP'][0]}킬을 기록하고 {blue_result['TOP'][1]}데스를 기록했습니다.")
-            comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {blue_result['MID'][0]}킬을 기록하고 {blue_result['MID'][1]}데스를 기록했습니다.")
-            comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {blue_result['BOT'][0]}킬을 기록하고 {blue_result['BOT'][1]}데스를 기록했습니다.")
-            comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {blue_result['OTHER'][0]}킬을 기록하고 {blue_result['OTHER'][1]}데스를 기록했습니다.")
-            comparisons['TOP'].append(f"아군 라이너는 탑에서 평균 {red_result['TOP'][0]}킬을 기록하고 {red_result['TOP'][1]}데스를 기록했습니다.")
-            comparisons['MID'].append(f"아군 라이너는 미드에서 평균 {red_result['MID'][0]}킬을 기록하고 {red_result['MID'][1]}데스를 기록했습니다.")
-            comparisons['BOT'].append(f"아군 라이너는 바텀에서 평균 {red_result['BOT'][0]}킬을 기록하고 {red_result['BOT'][1]}데스를 기록했습니다.")
-            comparisons['OTHER'].append(f"아군 라이너는 정글에서 평균 {red_result['OTHER'][0]}킬을 기록하고 {red_result['OTHER'][1]}데스를 기록했습니다.")
-            winrate = red_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
-            
-        print(blue_feedback)
-        print(red_feedback)
-        print(comparisons)
-        print(winrate)
-        return{
-            "blue": {"player": blue_result['player'], "feedback": blue_feedback},
-            "red": {"player": red_result['player'], "feedback": red_feedback},
-            "comparisons": comparisons,
-            "winrate": winrate
-        }
-    else:
-        if blue_result["not_enough_matches"] == True:
-            blue_result["player"]["riotId"] = blue_result["player"]["riotId"] + "(정보 부족)"
-        if red_result['not_enough_matches'] == True:
-            red_result["player"]["riotId"] = red_result["player"]["riotId"] + "(정보 부족)"
-        comparisons = {
-            "Enemy Area":[], "My Area":[],
-            "TOP":[], "MID":[], "BOT":[], "OTHER":[],
-        }
-        winrate = 0 
-        if team == "blue":
-            blue_feedback = winrate_calc(blue_result, tier)
-            red_feedback = winrate_calc(red_result, tier)
-            if red_result["top_jungle"]>red_result["bot_jungle"]:
-                comparisons['My Area'].append(f"상대방은 평균 {red_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 탑쪽 정글에서 활동합니다.")
-            elif red_result["top_jungle"]<red_result["bot_jungle"]:
-                comparisons['My Area'].append(f"상대방은 평균 {red_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 바텀쪽 정글에서 활동합니다.")
-            else:
-                comparisons['My Area'].append(f"상대방은 평균 {red_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 탑과 바텀 모두를 돌아다닙니다.")
-            if blue_result["top_jungle"]>blue_result["bot_jungle"]:
-                comparisons['Enemy Area'].append(f"아군은 평균 {blue_result['enemy_jungle']}번 상대 정글에 들어갔고 주로 탑쪽 정글에서 활동합니다.")
-            elif blue_result["top_jungle"]<blue_result["bot_jungle"]:
-                comparisons['Enemy Area'].append(f"아군은 평균 {blue_result['enemy_jungle']}번 상대 정글에 들어갔고 주로 바텀쪽 정글에서 활동합니다.")
-            else:
-                comparisons['Enemy Area'].append(f"아군은 평균 {blue_result['enemy_jungle']}번 상대 정글에 들어갔고 탑과 바텀 모두를 돌아다닙니다.")
-            comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {red_result['TOP'][0]}킬을 기록하고 {red_result['TOP'][1]}데스를 기록했습니다.")
-            comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {red_result['MID'][0]}킬을 기록하고 {red_result['MID'][1]}데스를 기록했습니다.")
-            comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {red_result['BOT'][0]}킬을 기록하고 {red_result['BOT'][1]}데스를 기록했습니다.")
-            comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {red_result['OTHER'][0]}킬을 기록하고 {red_result['OTHER'][1]}데스를 기록했습니다.")
-            comparisons['TOP'].append(f"아군 라이너는 탑에서 평균 {blue_result['TOP'][0]}킬을 기록하고 {blue_result['TOP'][1]}데스를 기록했습니다.")
-            comparisons['MID'].append(f"아군 라이너는 미드에서 평균 {blue_result['MID'][0]}킬을 기록하고 {blue_result['MID'][1]}데스를 기록했습니다.")
-            comparisons['BOT'].append(f"아군 라이너는 바텀에서 평균 {blue_result['BOT'][0]}킬을 기록하고 {blue_result['BOT'][1]}데스를 기록했습니다.")
-            comparisons['OTHER'].append(f"아군 라이너는 정글에서 평균 {blue_result['OTHER'][0]}킬을 기록하고 {blue_result['OTHER'][1]}데스를 기록했습니다.")
-            winrate = blue_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
-            return{
-                "blue": {"player": blue_result['player'], "feedback": blue_feedback},
-                "red": {"player": red_result['player'], "feedback": red_feedback},
-                "comparisons": comparisons,
-                "winrate": winrate
-            }
-        else:
-            red_feedback = winrate_calc(red_result, tier)
-            blue_feedback = winrate_calc(blue_result, tier)
-            if blue_result["top_jungle"]>blue_result["bot_jungle"]:
-                comparisons['My Area'].append(f"상대방은 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 탑쪽 정글에서 활동합니다.")
-            elif blue_result["top_jungle"]<blue_result["bot_jungle"]:
-                comparisons['My Area'].append(f"상대방은 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 주로 바텀쪽 정글에서 활동합니다.")
-            else:
-                comparisons['My Area'].append(f"상대방은 평균 {blue_result['enemy_jungle']}번 우리 정글에 들어왔고 탑과 바텀 모두를 돌아다닙니다.")
-            if red_result["top_jungle"]>red_result["bot_jungle"]:
-                comparisons['Enemy Area'].append(f"아군은 평균 {red_result['enemy_jungle']}번 상대 정글에 들어갔고 주로 탑쪽 정글에서 활동합니다.")
-            elif red_result["top_jungle"]<red_result["bot_jungle"]:
-                comparisons['Enemy Area'].append(f"아군은 평균 {red_result['enemy_jungle']}번 상대 정글에 들어갔고 주로 바텀쪽 정글에서 활동합니다.")
-            else:
-                comparisons['Enemy Area'].append(f"아군은 평균 {red_result['enemy_jungle']}번 상대 정글에 들어갔고 주로 탑과 바텀 모두를 돌아다닙니다.")
-            comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {blue_result['TOP'][0]}킬을 기록하고 {blue_result['TOP'][1]}데스를 기록했습니다.")
-            comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {blue_result['MID'][0]}킬을 기록하고 {blue_result['MID'][1]}데스를 기록했습니다.")
-            comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {blue_result['BOT'][0]}킬을 기록하고 {blue_result['BOT'][1]}데스를 기록했습니다.")
-            comparisons['OTHER'].append(f"상대 라이너는 정글에서 평균 {blue_result['OTHER'][0]}킬을 기록하고 {blue_result['OTHER'][1]}데스를 기록했습니다.")
-            comparisons['TOP'].append(f"아군 라이너는 탑에서 평균 {red_result['TOP'][0]}킬을 기록하고 {red_result['TOP'][1]}데스를 기록했습니다.")
-            comparisons['MID'].append(f"아군 라이너는 미드에서 평균 {red_result['MID'][0]}킬을 기록하고 {red_result['MID'][1]}데스를 기록했습니다.")
-            comparisons['BOT'].append(f"아군 라이너는 바텀에서 평균 {red_result['BOT'][0]}킬을 기록하고 {red_result['BOT'][1]}데스를 기록했습니다.")
-            comparisons['OTHER'].append(f"아군 라이너는 정글에서 평균 {red_result['OTHER'][0]}킬을 기록하고 {red_result['OTHER'][1]}데스를 기록했습니다.")
-            winrate = red_feedback["predicted_winrate"]/(blue_feedback["predicted_winrate"]+red_feedback["predicted_winrate"])
-            return{
-                "blue": {"player": blue_result['player'], "feedback": blue_feedback},
-                "red": {"player": red_result['player'], "feedback": red_feedback},
-                "comparisons": comparisons,
-                "winrate": winrate
-            }
+            return "비등"
 
+    def area_feedback(top_count, bot_count, entity_name):
+        """정글 영역 판단"""
+        if top_count > bot_count:
+            return f"{entity_name} 주로 탑쪽 정글에서 활동합니다."
+        elif top_count < bot_count:
+            return f"{entity_name} 주로 바텀쪽 정글에서 활동합니다."
+        else:
+            return f"{entity_name} 탑과 바텀 모두를 돌아다닙니다."
+
+    def lane_summary(feedback_dict, blue, red, lane_keys=("TOP","MID","BOT","OTHER")):
+        for lane in lane_keys:
+            feedback_dict[lane].append(f"상대 라이너는 {lane}에서 평균 {red[lane][0]}킬, {red[lane][1]}데스를 기록했습니다.")
+            feedback_dict[lane].append(f"아군 라이너는 {lane}에서 평균 {blue[lane][0]}킬, {blue[lane][1]}데스를 기록했습니다.")
+        return feedback_dict
+
+    # 🟢 팀별 승률 및 피드백 계산
+    blue_feedback = winrate_calc(blue_result, tier)
+    red_feedback = winrate_calc(red_result, tier)
+
+    # 🔹 비교 dict 초기화
+    if blue_result["player"]["lane"] not in ("JUNGLE", "UTILITY"):
+        comparisons = {k: [] for k in ["early_trade_result_3min", "early_trade_result_8min", "need_recall_8min",
+                                      "lane_cs_result_10min", "lane_gold_result_10min", "midgame_gold_result",
+                                      "jungle", "TOP", "MID", "BOT", "OTHER"]}
+
+        # 숫자 지표 비교
+        numeric_keys = ["early_trade_result_3min", "early_trade_result_8min", 
+                        "lane_cs_result_10min", "lane_gold_result_10min", "midgame_gold_result"]
+        desc_map = {
+            "early_trade_result_3min": "라인전 초반 딜교",
+            "early_trade_result_8min": "라인전 중반 딜교",
+            "lane_cs_result_10min": "라인전 중반 cs",
+            "lane_gold_result_10min": "라인전 중반 골드",
+            "midgame_gold_result": "게임 중반 골드"
+        }
+        for key in numeric_keys:
+            result = compare_value(blue_result[key], red_result[key])
+            comparisons[key].append(f"{desc_map[key]}에서 {result}할 확률이 높습니다.")
+
+        # need_recall_8min 처리
+        if blue_result['need_recall_8min'] < 0.5:
+            comparisons['need_recall_8min'].append("8분 오브젝트 타이밍에 정비 혹은 체력 관리가 필요해보입니다.")
+
+        # 정글 통계
+        comparisons['jungle'].append(
+            f"우리팀 라이너 최근 10게임 갱으로 {blue_result['opp_jungle']}번 사망, {red_result['my_jungle']}번 킬."
+        )
+
+        # 라인별 summary
+        comparisons = lane_summary(comparisons, blue_result, red_result)
+
+        # 🏆 승률
+        if team=="blue":
+            winrate = blue_feedback["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"])
+        else:
+            winrate = red_feedback["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"])
+
+    else:  # 정글/유틸
+        comparisons = {k: [] for k in ["Enemy Area", "My Area", "TOP", "MID", "BOT", "OTHER"]}
+
+        # 정글 영역 판단
+        comparisons["My Area"].append(area_feedback(red_result["top_jungle"], red_result["bot_jungle"], "상대방"))
+        comparisons["Enemy Area"].append(area_feedback(blue_result["top_jungle"], blue_result["bot_jungle"], "아군"))
+
+        # 라인별 summary
+        comparisons = lane_summary(comparisons, blue_result, red_result)
+
+        # 승률
+        if team=="blue":
+            winrate = blue_feedback["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"])
+        else:
+            winrate = red_feedback["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"])
+
+    return {
+        "blue": {"player": blue_result['player'], "feedback": blue_feedback},
+        "red": {"player": red_result['player'], "feedback": red_feedback},
+        "comparisons": comparisons,
+        "winrate": winrate
+    }
         
