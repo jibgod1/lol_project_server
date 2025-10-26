@@ -315,8 +315,7 @@ def generate_feedback(positive, negative, below_avg):
                 feedback["below_avg"].append("라인전 킬 차이가 평균보다 높습니다. 과한 로밍과 정글 개입은 오히려 악영향을 미칠 수 있습니다.")
         elif f == "diff_early_d":
             if coef > 0:
-                feedback["below_avg"].append("라인전 데스 차이가 평균보다 낮습니다. 교전 중 죽어도 이득을 볼 수 있는 경우도 있고,"
-                                             "누군가는 죽어야 하는 상황도 있습니다. 누군가 죽어야 한다면 희생하는것도 생각해봅시다.")
+                feedback["below_avg"].append("라인전 데스 차이가 평균보다 낮습니다. 죽더라도 킬을 하면 이득이라 판단되면 적극적으로 킬을 노려보도록 합시다.")
             else:
                 feedback["below_avg"].append("라인전 데스 차이가 평균보다 높습니다. 라인전에서 킬각을 조심하고, 로밍, 정글에 들어갈때도 안전하게 플레이하도록 합시다.")
         elif f == "diff_early_a":
@@ -634,8 +633,8 @@ def create_comment(blue_result, red_result, tier, team):
                 comparisons['midgame_gold_result'].append("게임 중반 골드가 밀릴 확률이 높습니다.")
             else:
                 comparisons['midgame_gold_result'].append("게임 중반 골드가 비슷할 확률이 높습니다.")
-            comparisons['jungle'].append(f"최근 10게임 라인전 중 갱으로 {red_result['opp_jungle']}번 사망했습니다."
-                                        f"최근 10게임 상대방 라이너는 갱으로 {blue_result['my_jungle']}번 킬을 했습니다.")
+            comparisons['jungle'].append(f"최근 10게임 우리팀 라이너는 갱으로 {red_result['opp_jungle']}번 사망했습니다."
+                                        f"최근 10게임 우리팀 라이너는 갱으로 {blue_result['my_jungle']}번 킬을 했습니다.")
             comparisons['TOP'].append(f"상대 라이너는 탑에서 평균 {blue_result['TOP'][0]}킬을 기록하고 {blue_result['TOP'][1]}데스를 기록했습니다.")
             comparisons['MID'].append(f"상대 라이너는 미드에서 평균 {blue_result['MID'][0]}킬을 기록하고 {blue_result['MID'][1]}데스를 기록했습니다.")
             comparisons['BOT'].append(f"상대 라이너는 바텀에서 평균 {blue_result['BOT'][0]}킬을 기록하고 {blue_result['BOT'][1]}데스를 기록했습니다.")

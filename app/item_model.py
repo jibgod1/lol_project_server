@@ -57,7 +57,7 @@ def build_input_vector(my_roles, enemy_roles, num_roles, role2idx):
             if r in role2idx:
                 enemy_vec[role2idx[r]] += 1.0
 
-    interaction_vec = torch.ger(my_vec, enemy_vec).view(-1) * 4.0
+    interaction_vec = torch.ger(my_vec, enemy_vec).view(-1) * 2.0
     return torch.cat([my_vec, enemy_vec, interaction_vec], dim=0)
 
 # ------------------------------
@@ -222,17 +222,18 @@ if __name__ == "__main__":
     item_model, valid_items, role2idx, num_roles, item_data, test_X, test_Y = train_and_save_item_mlp(DB_PATH, JSON_PATH, MODEL_PATH)
 
     # Top-5 Accuracy 평가
+    
     evaluate_topk(item_model, test_X, test_Y, top_k=5)
 
     item_model, valid_items, role2idx, num_roles, item_data = load_item_model(MODEL_PATH)
 
     # 샘플 추천
-    my_roles = ["Support","Tank"]
+    my_roles = ["Tank","Support"]
     enemy_roles = [
-        ["Tank"],   
-        ["Assassin","Fighter"],   
-        ["Assassin"],   
-        ["Fighter","Assassin"],          
+        ["Mage"],   
+        ["Mage","Fighter"],   
+        ["Mage"],   
+        ["Marksman","Mage"],          
         ["Support","Mage"]    
     ]
     # enemy_roles = [

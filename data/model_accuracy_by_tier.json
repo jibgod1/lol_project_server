@@ -1,72 +1,72 @@
 {
     "IRON": {
         "lane_accuracies": {
-            "TOP": 76.41,
-            "JUNGLE": 83.62,
-            "MIDDLE": 79.52,
-            "BOTTOM": 81.85,
-            "UTILITY": 80.48
+            "TOP": 80.52,
+            "JUNGLE": 81.91,
+            "MIDDLE": 79.32,
+            "BOTTOM": 78.53,
+            "UTILITY": 79.68
         },
-        "avg_accuracy": 80.38
+        "avg_accuracy": 79.99
     },
     "BRONZE": {
         "lane_accuracies": {
-            "TOP": 78.68,
-            "JUNGLE": 85.13,
-            "MIDDLE": 80.91,
-            "BOTTOM": 81.89,
-            "UTILITY": 80.57
+            "TOP": 79.09,
+            "JUNGLE": 82.99,
+            "MIDDLE": 78.38,
+            "BOTTOM": 81.18,
+            "UTILITY": 79.35
         },
-        "avg_accuracy": 81.44
+        "avg_accuracy": 80.2
     },
     "SILVER": {
         "lane_accuracies": {
-            "TOP": 77.1,
-            "JUNGLE": 84.79,
-            "MIDDLE": 78.3,
-            "BOTTOM": 84.44,
-            "UTILITY": 82.78
+            "TOP": 79.84,
+            "JUNGLE": 82.96,
+            "MIDDLE": 80.02,
+            "BOTTOM": 83.11,
+            "UTILITY": 81.16
         },
-        "avg_accuracy": 81.48
+        "avg_accuracy": 81.42
     },
     "GOLD": {
         "lane_accuracies": {
-            "TOP": 77.83,
-            "JUNGLE": 86.7,
-            "MIDDLE": 81.5,
-            "BOTTOM": 84.51,
-            "UTILITY": 81.07
+            "TOP": 78.59,
+            "JUNGLE": 85.78,
+            "MIDDLE": 80.73,
+            "BOTTOM": 83.44,
+            "UTILITY": 84.58
         },
-        "avg_accuracy": 82.32
+        "avg_accuracy": 82.62
     },
     "PLATINUM": {
         "lane_accuracies": {
-            "TOP": 80.57,
-            "JUNGLE": 86.11,
-            "MIDDLE": 81.75,
-            "BOTTOM": 86.21,
-            "UTILITY": 82.79
+            "TOP": 81.77,
+            "JUNGLE": 85.23,
+            "MIDDLE": 82.17,
+            "BOTTOM": 84.17,
+            "UTILITY": 84.11
         },
         "avg_accuracy": 83.49
     },
     "EMERALD": {
         "lane_accuracies": {
-            "TOP": 82.66,
-            "JUNGLE": 85.91,
-            "MIDDLE": 82.43,
-            "BOTTOM": 86.74,
-            "UTILITY": 84.28
+            "TOP": 80.92,
+            "JUNGLE": 87.87,
+            "MIDDLE": 80.9,
+            "BOTTOM": 84.83,
+            "UTILITY": 83.9
         },
-        "avg_accuracy": 84.4
+        "avg_accuracy": 83.68
     },
     "DIAMOND": {
         "lane_accuracies": {
-            "TOP": 82.83,
-            "JUNGLE": 87.48,
-            "MIDDLE": 84.03,
-            "BOTTOM": 85.7,
-            "UTILITY": 85.85
+            "TOP": 81.51,
+            "JUNGLE": 86.97,
+            "MIDDLE": 83.32,
+            "BOTTOM": 86.76,
+            "UTILITY": 85.75
         },
-        "avg_accuracy": 85.18
+        "avg_accuracy": 84.86
     }
 }
