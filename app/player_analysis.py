@@ -278,98 +278,60 @@ def generate_feedback(positive, negative, below_avg):
 
 
 def create_comment(blue_result, red_result, tier, team):
-    exclude_keys = {"match_id", "my_champion", "enemy_champion", "teamposition", "win", "player", "not_enough_matches",
-                    "early_trade_result_3min", "early_trade_result_8min", "need_recall_8min",
-                    "lane_cs_diff_10min", "lane_cs_result_10min", "gold_diff_10min", "lane_gold_result_10min", 
-                    "gold_diff_14min", "midgame_gold_result",
-                    "my_jungle", "opp_jungle", "enemy_jungle", "top_jungle", "bot_jungle", "TOP", "MID", "BOT", "OTHER",
-                    "kills", "deaths", "assists", "early_kills", "early_deaths", "early_assists", "lane_cs", "kill_participation", "turret_damage",
-                    "team_Dragon_kills", "team_Horde_kills", "team_riftHerald_kills", "team_Baron_kills", "team_ElderDragon_kills", "team_Atakhan_kills"}
+    exclude_keys = {
+        "match_id", "my_champion", "enemy_champion", "teamposition", "win", "player", "not_enough_matches",
+        "early_trade_result_3min", "early_trade_result_8min", "need_recall_8min",
+        "lane_cs_diff_10min", "lane_cs_result_10min", "gold_diff_10min", "lane_gold_result_10min",
+        "gold_diff_14min", "midgame_gold_result",
+        "my_jungle", "opp_jungle", "enemy_jungle", "top_jungle", "bot_jungle", "TOP", "MID", "BOT", "OTHER",
+        "kills", "deaths", "assists", "early_kills", "early_deaths", "early_assists", "lane_cs", "kill_participation", "turret_damage",
+        "team_Dragon_kills", "team_Horde_kills", "team_riftHerald_kills", "team_Baron_kills", "team_ElderDragon_kills", "team_Atakhan_kills"
+    }
 
+    # 팀 기준으로 우리팀/상대팀 매핑
+    def get_team_stats(blue_result, red_result, team):
+        if team == "blue":
+            return blue_result, red_result
+        else:
+            return red_result, blue_result
+
+    # 승률 계산
     def winrate_calc(result, tier):
-
         model_path = os.path.join(DATA_DIR, f"model_{result['player']['lane'].lower()}_{tier.upper()}.pkl")
         scaler_path = os.path.join(DATA_DIR, f"scaler_{result['player']['lane'].lower()}_{tier.upper()}.pkl")
 
-        model = joblib.load(model_path) 
+        model = joblib.load(model_path)
         scaler = joblib.load(scaler_path)
-    
-        # 모델 입력값 준비
+
         model_input_dict = {k: v for k, v in result.items() if k not in exclude_keys}
-        model_input_dict["winrate"] = 50   # TODO: 챔피언 승률 반영 가능
-    
+        model_input_dict["winrate"] = 50
+
         feature_names = list(model_input_dict.keys())
         model_input_values = np.array([list(model_input_dict.values())])
         model_input_scaled = scaler.transform(model_input_values)
-    
-        # 승률 예측
+
         predicted_winrate = model.predict_proba(model_input_scaled)[0][1]
-    
-        # 각 feature 기여도 계산
+
         coefs = model.coef_[0]
         contributions = model_input_scaled[0] * coefs
-
 
         below_avg = []
         for i, f in enumerate(feature_names):
             scaled_value = model_input_scaled[0][i]
             coef = coefs[i]
-            contribution = contributions[i]  # = scaled_value * coef
-        
-            if coef > 0:
-                if scaled_value < 0:  # 중앙값보다 낮으면 승률에 덜 기여 → 평균 이하
-                    below_avg.append({
-                        "feature": f, 
-                        "value": model_input_dict[f], 
-                        "contribution": contribution,
-                        "coef": coefs[i]
-                    })
-            else:  # coef < 0
-                if scaled_value > 0:  # 중앙값보다 높으면 승률에 덜 기여 → 평균 이하
-                    below_avg.append({
-                        "feature": f,
-                        "value": model_input_dict[f],
-                        "contribution": contribution,
-                        "coef": coefs[i]
-                        })
-        
-        feature_contribs = []
-        for i, f in enumerate(feature_names):
-            feature_contribs.append({
-                "feature": f,
-                "value": model_input_dict[f],
-                "contribution": contributions[i],
-                "coef": coefs[i]
-            })
+            if (coef > 0 and scaled_value < 0) or (coef < 0 and scaled_value > 0):
+                below_avg.append({"feature": f, "value": model_input_dict[f], "contribution": contributions[i], "coef": coefs[i]})
 
-    
+        feature_contribs = [{"feature": f, "value": model_input_dict[f], "contribution": contributions[i], "coef": coefs[i]} 
+                            for i, f in enumerate(feature_names)]
         sorted_features = sorted(feature_contribs, key=lambda x: x['contribution'], reverse=True)
         positive = sorted_features[:3]
-        negative = sorted_features[-3:]  
-
+        negative = sorted_features[-3:]
         positive_features = {x['feature'] for x in positive}
         below_avg = [b for b in below_avg if b['feature'] not in positive_features]
-    
-        # 🔹 코멘트 생성
+
         comments = generate_feedback(positive, negative, below_avg)
-        
-        print(f"\n[플레이어: {result['player']['riotId']}]")
-        print("긍정 기여 Top3:", [x['feature'] for x in positive])
-        print("부정 기여 Top3:", [x['feature'] for x in negative])
-        print("평균 이하 지표:", [x['feature'] for x in below_avg])
-        
-        print("\n🔹 긍정 피드백:")
-        for msg in comments['positive']:
-            print("-", msg)
-        
-        print("\n🔹 부정 피드백:")
-        for msg in comments['negative']:
-            print("-", msg)
-        
-        print("\n🔹 평균 이하 지표 피드백:")
-        for msg in comments['below_avg']:
-            print("-", msg)
-            
+
         return {
             "predicted_winrate": float(predicted_winrate),
             "positive": positive,
@@ -378,43 +340,44 @@ def create_comment(blue_result, red_result, tier, team):
             "comments": comments
         }
 
+    # 값 비교
     def compare_value(a, b, thresholds=(0.2, -0.2)):
-        """두 값 비교 → 우위/불리/비등"""
         upper, lower = thresholds
         if a - b > upper:
-            return "우위"
+            return "유리"
         elif a - b < lower:
             return "불리"
         else:
             return "비등"
 
+    # 정글 영역 피드백
     def area_feedback(top_count, bot_count, entity_name):
-        """정글 영역 판단"""
         if top_count > bot_count:
-            return f"{entity_name} 주로 탑쪽 정글에서 활동합니다."
+            return f"{entity_name}은 주로 탑쪽 정글에서 활동합니다."
         elif top_count < bot_count:
-            return f"{entity_name} 주로 바텀쪽 정글에서 활동합니다."
+            return f"{entity_name}은 주로 바텀쪽 정글에서 활동합니다."
         else:
-            return f"{entity_name} 탑과 바텀 모두를 돌아다닙니다."
+            return f"{entity_name}은 탑과 바텀 모두를 돌아다닙니다."
 
+    # 라인별 갱 통계/summary
     def lane_summary(feedback_dict, blue, red, lane_keys=("TOP","MID","BOT","OTHER")):
         for lane in lane_keys:
             feedback_dict[lane].append(f"상대 라이너는 {lane}에서 평균 {red[lane][0]}킬, {red[lane][1]}데스를 기록했습니다.")
             feedback_dict[lane].append(f"아군 라이너는 {lane}에서 평균 {blue[lane][0]}킬, {blue[lane][1]}데스를 기록했습니다.")
         return feedback_dict
 
-    # 🟢 팀별 승률 및 피드백 계산
+    # 🟢 팀별 승률 계산
     blue_feedback = winrate_calc(blue_result, tier)
     red_feedback = winrate_calc(red_result, tier)
 
-    # 🔹 비교 dict 초기화
-    if blue_result["player"]["lane"] not in ("JUNGLE", "UTILITY"):
-        comparisons = {k: [] for k in ["early_trade_result_3min", "early_trade_result_8min", "need_recall_8min",
-                                      "lane_cs_result_10min", "lane_gold_result_10min", "midgame_gold_result",
-                                      "jungle", "TOP", "MID", "BOT", "OTHER"]}
+    my_team, opp_team = get_team_stats(blue_result, red_result, team)
 
-        # 숫자 지표 비교
-        numeric_keys = ["early_trade_result_3min", "early_trade_result_8min", 
+    # 🟢 비교/피드백 생성
+    if my_team["player"]["lane"] not in ("JUNGLE", "UTILITY"):
+        comparisons = {k: [] for k in ["early_trade_result_3min", "early_trade_result_8min", "need_recall_8min",
+                                       "lane_cs_result_10min", "lane_gold_result_10min", "midgame_gold_result",
+                                       "jungle", "TOP", "MID", "BOT", "OTHER"]}
+        numeric_keys = ["early_trade_result_3min", "early_trade_result_8min",
                         "lane_cs_result_10min", "lane_gold_result_10min", "midgame_gold_result"]
         desc_map = {
             "early_trade_result_3min": "라인전 초반 딜교",
@@ -424,42 +387,37 @@ def create_comment(blue_result, red_result, tier, team):
             "midgame_gold_result": "게임 중반 골드"
         }
         for key in numeric_keys:
-            result = compare_value(blue_result[key], red_result[key])
+            result = compare_value(my_team[key], opp_team[key])
             comparisons[key].append(f"{desc_map[key]}에서 {result}할 확률이 높습니다.")
 
-        # need_recall_8min 처리
-        if blue_result['need_recall_8min'] < 0.5:
+        if my_team['need_recall_8min'] < 0.5:
             comparisons['need_recall_8min'].append("8분 오브젝트 타이밍에 정비 혹은 체력 관리가 필요해보입니다.")
 
-        # 정글 통계
+        # jungler 통계
         comparisons['jungle'].append(
-            f"우리팀 라이너 최근 10게임 갱으로 {blue_result['opp_jungle']}번 사망, {red_result['my_jungle']}번 킬."
+            f"아군 라이너 최근 10게임 갱으로 {my_team['opp_jungle']}번 죽고, {my_team['my_jungle']}번 킬을 했습니다 "
+            f"적 라이너 최근 10게임 갱으로 {opp_team['opp_jungle']}번 죽고, {opp_team['my_jungle']}번 킬을 했습니다."
         )
 
-        # 라인별 summary
-        comparisons = lane_summary(comparisons, blue_result, red_result)
+        comparisons = lane_summary(comparisons, my_team, opp_team)
 
-        # 🏆 승률
-        if team=="blue":
-            winrate = blue_feedback["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"])
-        else:
-            winrate = red_feedback["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"])
-
-    else:  # 정글/유틸
+    else:
+        # 정글/유틸
         comparisons = {k: [] for k in ["Enemy Area", "My Area", "TOP", "MID", "BOT", "OTHER"]}
+        comparisons["My Area"].append(
+            f"적은 우리 정글에 {opp_team['enemy_jungle']}번 들어왔습니다."
+        )
+        comparisons["Enemy Area"].append(
+            f"아군은 상대 정글에 {my_team['enemy_jungle']}번 들어갔습니다."
+        )
+        comparisons['jungle'] = []
+        comparisons['jungle'].append(area_feedback(opp_team["top_jungle"], opp_team["bot_jungle"], "적"))
+        comparisons['jungle'].append(area_feedback(my_team["top_jungle"], my_team["bot_jungle"], "아군"))
+        comparisons = lane_summary(comparisons, my_team, opp_team)
 
-        # 정글 영역 판단
-        comparisons["My Area"].append(area_feedback(red_result["top_jungle"], red_result["bot_jungle"], "상대방"))
-        comparisons["Enemy Area"].append(area_feedback(blue_result["top_jungle"], blue_result["bot_jungle"], "아군"))
-
-        # 라인별 summary
-        comparisons = lane_summary(comparisons, blue_result, red_result)
-
-        # 승률
-        if team=="blue":
-            winrate = blue_feedback["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"])
-        else:
-            winrate = red_feedback["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"])
+    # 🏆 승률 계산
+    winrate = my_team["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"]) \
+        if team == "blue" else my_team["predicted_winrate"] / (blue_feedback["predicted_winrate"] + red_feedback["predicted_winrate"])
 
     return {
         "blue": {"player": blue_result['player'], "feedback": blue_feedback},
@@ -467,4 +425,6 @@ def create_comment(blue_result, red_result, tier, team):
         "comparisons": comparisons,
         "winrate": winrate
     }
-        
+
+
+
