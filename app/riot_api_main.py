@@ -11,6 +11,7 @@ from create_db import create_match_db
 
 create_match_db()
 
+#tier1=["GOLD"]
 tier1 = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND"]
 #tier2 = ["PLATINUM", "EMERALD", "DIAMOND"]
 player_count = 300

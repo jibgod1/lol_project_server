@@ -152,6 +152,9 @@ def info(match_id, match_data, match_info, flag):
                     monster = monster_event['monsterType'].lower()
                     if killer in participant_stats:
                         participant_stats[killer][f"{monster}_participation"] += 1
+                        late_kda[killer]["kills"] -= 1
+                        if late_kda[killer]["kills"] < 0:
+                            late_kda[killer]["kills"] = 0
                     if victim in participant_stats:
                         participant_stats[victim][f"{monster}_deaths"] += 1
                         late_kda[victim]["deaths"] -= 1
@@ -160,6 +163,9 @@ def info(match_id, match_data, match_info, flag):
                     for assister in assists:
                         if assister in participant_stats:
                             participant_stats[assister][f"{monster}_participation"] += 1
+                        late_kda[assister]["assists"] -= 1
+                        if late_kda[assister]["assists"] < 0:
+                            late_kda[assister]["assists"] = 0
 
             
                         

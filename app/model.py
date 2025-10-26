@@ -21,7 +21,8 @@ os.makedirs(DATA_DIR, exist_ok=True)
 
 
 # 1. 데이터 불러오기
-tiers = ["IRON","BRONZE","SILVER","GOLD","PLATINUM","EMERALD","DIAMOND"]
+#tiers = ["IRON","BRONZE","SILVER","GOLD","PLATINUM","EMERALD","DIAMOND"]
+tiers=["GOLD"]
 lanes = ["TOP","JUNGLE","MIDDLE","BOTTOM","UTILITY"]
 tier_accuracies = {}
 for tier in tiers:
