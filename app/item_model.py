@@ -6,13 +6,18 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.model_selection import train_test_split
+import mysql.connector
 from torch.utils.data import TensorDataset, DataLoader
 
-# ------------------------------
-# 경로
-# ------------------------------
+mysql_config = {
+    "host": "3.37.127.128",
+    "user": "lol_local",
+    "password": "!Jib990205",
+    "database": "item_data",
+    "port": 3306
+}
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB_PATH = os.path.join(BASE_DIR, "data", "item_data.db")
 JSON_PATH = os.path.join(BASE_DIR, "data", "item.json")
 MODEL_PATH = os.path.join(BASE_DIR, "data", "item_model.pth")
 
@@ -74,15 +79,15 @@ def build_labels(item_str, valid_items):
 # ------------------------------
 # 학습 및 모델 저장 함수
 # ------------------------------
-def train_and_save_item_mlp(DB_PATH, JSON_PATH, MODEL_PATH,
+def train_and_save_item_mlp(JSON_PATH, MODEL_PATH,
                             hidden_dim=512, batch_size=100, epochs=10, lr=0.01,
                             role_list=None):
     if role_list is None:
         role_list = ['Tank','Fighter','Marksman','Assassin','Mage','Support']
 
     # DB 로드
-    conn = sqlite3.connect(DB_PATH)
-    df = pd.read_sql_query("SELECT * FROM item_feedback", conn)
+    conn = mysql.connector.connect(**mysql_config)
+    df = pd.read_sql("SELECT * FROM item_feedback", conn)
     conn.close()
 
     # JSON 로드
@@ -219,7 +224,7 @@ def evaluate_topk(model, test_X, test_Y, top_k=5, batch_size=100):
 # ------------------------------
 if __name__ == "__main__":
     # 학습 및 모델 저장
-    item_model, valid_items, role2idx, num_roles, item_data, test_X, test_Y = train_and_save_item_mlp(DB_PATH, JSON_PATH, MODEL_PATH)
+    item_model, valid_items, role2idx, num_roles, item_data, test_X, test_Y = train_and_save_item_mlp(JSON_PATH, MODEL_PATH)
 
     # Top-5 Accuracy 평가
     

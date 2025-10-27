@@ -7,12 +7,19 @@ import get_player_puuid
 import get_match_id
 import get_random_players
 import game_info
-from create_db import create_match_db
+from create_db import create_match_db, create_champion_db
+from opgg_match_up import create_matchup_db
+from pick_ban import create_pick_ban_db
+import concurrent.futures
 
-create_match_db()
-
+#create_match_db()
+create_champion_db()
 #tier1=["GOLD"]
 tier1 = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND"]
+tiers2 = ['iron','bronze', 'silver', 'gold', 'gold_plus', 
+             'platinum', 'platinum_plus', 'emerald', 
+             'emerald_plus', 'diamond', 'diamond_plus'] 
+region = 'kr'
 #tier2 = ["PLATINUM", "EMERALD", "DIAMOND"]
 player_count = 300
 players_per_batch = 10 # 몇명씩 잘라서 수집할지
@@ -20,6 +27,10 @@ matches_per_player = 10  # 각 플레이어 당 수집할 매치 수
 positions = ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'UTILITY']
 
 start_time = time.time()
+
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+future_matchup = executor.submit(create_matchup_db, tiers2, region)
+future_matchup = executor.submit(create_pick_ban_db, tiers2, region)
 
 # 1. 플레이어 수집
 for tier in tier1:
@@ -63,7 +74,6 @@ hours = int(elapsed // 3600)
 minutes = int((elapsed % 3600) // 60)
 seconds = int(elapsed % 60)
 print(f"\n✅ 전체 수집 완료! 총 소요 시간: {hours}시간 {minutes}분 {seconds}초")
-
 # %%
 
 

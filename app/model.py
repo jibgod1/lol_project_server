@@ -7,6 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import RobustScaler
 from sklearn.metrics import accuracy_score, classification_report
+import mysql.connector
 import joblib
 import os
 import json
@@ -14,6 +15,20 @@ import numpy as np
 import statsmodels.api as sm
 import pandas as pd
 
+mysql_match_config = {
+        "host": "3.37.127.128",
+        "user": "lol_local",
+        "password": "!Jib990205", 
+        "database": "match_data",
+        "port": 3306
+    }
+mysql_matchup_config = {
+        "host": "3.37.127.128",
+        "user": "lol_local",
+        "password": "!Jib990205", 
+        "database": "matchup_data",
+        "port": 3306
+    }
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -21,25 +36,24 @@ os.makedirs(DATA_DIR, exist_ok=True)
 
 
 # 1. 데이터 불러오기
-#tiers = ["IRON","BRONZE","SILVER","GOLD","PLATINUM","EMERALD","DIAMOND"]
-tiers=["GOLD"]
+tiers = ["IRON","BRONZE","SILVER","GOLD","PLATINUM","EMERALD","DIAMOND"]
+#tiers=["GOLD"]
 lanes = ["TOP","JUNGLE","MIDDLE","BOTTOM","UTILITY"]
 tier_accuracies = {}
 for tier in tiers:
     line_accuracies = {}
     for lane in lanes:
-        db_path = os.path.join(DATA_DIR, "match_data.db")
-        conn1 = sqlite3.connect(db_path)
-        df = pd.read_sql_query(f"SELECT * FROM match_id_{tier} WHERE teamposition = '{lane}'", conn1)
+        conn1 = mysql.connector.connect(**mysql_match_config)
+        df = pd.read_sql(f"SELECT * FROM match_id_{tier} WHERE teamposition = '{lane}'", conn1)
         conn1.close()
         
-        winrate_path = os.path.join(DATA_DIR, "matchup_data.db")
-        conn2 = sqlite3.connect(winrate_path)
-        winrate_df = pd.read_sql_query(
-            f"SELECT * FROM matchup_winrate WHERE tier = '{tier.lower()}' AND position = '{lane.lower()}'", conn2
+        conn2 = mysql.connector.connect(**mysql_matchup_config)
+        winrate_df = pd.read_sql(
+            f"SELECT * FROM matchup_winrate WHERE tier = '{tier.lower()}' AND position = '{lane.lower()}'", 
+            conn2
         )
         conn2.close()
-        
+
         winrate_df["hero"] = winrate_df["hero"].str.lower()
         winrate_df["opponent"] = winrate_df["opponent"].str.lower()
         

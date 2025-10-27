@@ -1,3 +1,4 @@
+#%%
 # opgg_winrate.py
 
 import json
@@ -5,7 +6,23 @@ import requests
 import time
 import os
 import sqlite3
+import mysql.connector
 
+
+mysql_champion_config = {
+        "host": "3.37.127.128",
+        "user": "lol_local",
+        "password": "!Jib990205",
+        "database": "champion_data",
+        "port": 3306
+    }
+mysql_matchup_config = {
+        "host": "3.37.127.128",
+        "user": "lol_local",
+        "password": "!Jib990205",
+        "database": "matchup_data",
+        "port": 3306
+    }
 
 
 def find_data_arrays(obj):
@@ -46,7 +63,7 @@ def matchup(hero, position, tier, region, max_retries=3):
         '_rsc': '17eld',
     }
 
-    url = f'https://op.gg/lol/champions/{hero}/counters/{position}'
+    url = f'https://op.gg/lol/champions/{hero.lower()}/counters/{position}'
 
     for attempt in range(1, max_retries + 1):
         try:
@@ -95,26 +112,27 @@ def matchup(hero, position, tier, region, max_retries=3):
                 return None
 
 def ensure_db():
-    conn = sqlite3.connect('matchup_data.db')
+    conn = mysql.connector.connect(**mysql_matchup_config)
     cur = conn.cursor()
     cur.execute('''
         CREATE TABLE IF NOT EXISTS matchup_winrate (
-            hero TEXT,
-            position TEXT,
-            tier TEXT,
-            region TEXT,
-            opponent TEXT,
-            win_rate REAL,
-            win REAL,
-            play REAL,
+            hero VARCHAR(50),
+            position VARCHAR(50),
+            tier VARCHAR(50),
+            region VARCHAR(20),
+            opponent VARCHAR(50),
+            win_rate FLOAT,
+            win FLOAT,
+            play FLOAT,
             PRIMARY KEY (hero, position, tier, region, opponent)
         )
     ''')
     conn.commit()
     conn.close()
 
+
 def insert_winrate_to_db(hero, position, tier, region, winrate_data):
-    conn = sqlite3.connect('matchup_data.db')
+    conn = mysql.connector.connect(**mysql_matchup_config)
     cur = conn.cursor()
     try:
         for row in winrate_data:
@@ -124,14 +142,18 @@ def insert_winrate_to_db(hero, position, tier, region, winrate_data):
             win = row.get('win')
             play = row.get('play')
 
-            if not all([opponent,win_rate,win, play]):
+            if not all([opponent, win_rate, win, play]):
                 print(f'[⚠️NULL 데이터 건너뛰기] {hero}-{position}-{tier}-{region} -> {row}')
                 continue
 
             cur.execute('''
-                INSERT OR REPLACE INTO matchup_winrate 
-                (hero, position, tier, region, opponent,win_rate,win, play)
-                VALUES (?, ?, ?, ?, ?, ?, ?,?)
+                INSERT INTO matchup_winrate 
+                (hero, position, tier, region, opponent, win_rate, win, play)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    win_rate = VALUES(win_rate),
+                    win = VALUES(win),
+                    play = VALUES(play)
             ''', (
                 str(hero),
                 str(position),
@@ -144,31 +166,23 @@ def insert_winrate_to_db(hero, position, tier, region, winrate_data):
             ))
 
         conn.commit()
-        print(f'[✔] DataBase: {hero}-{position}-{tier}-{region}  {len(winrate_data)} 개')
+        print(f'[✔] MySQL: {hero}-{position}-{tier}-{region}  {len(winrate_data)} 개')
     except Exception as e:
         print(f'[❌실패] {hero}-{position}-{tier}-{region} -> {e}')
     finally:
         conn.close()
 
-
-
-if __name__ == '__main__':
-
-  # ✅ 临时测试数据库写入是否成功
+def create_matchup_db(tiers: list, regions: list):
+    # 챔피언 key 가져오기
     ensure_db()
-    #sample = [{'champion': 'garen', 'win': 52.3, 'play': 1000}]
-    #insert_winrate_to_db('darius', 'top', 'iron', 'kr', sample)
-    #print('[✅测试] 手动写入测试数据完毕')
-
-    # 读取英雄 key
-    with open('pickban数据.json', 'r', encoding='utf-8') as f:
-        all_champions = json.load(f)
-    hero_keys = [champ['key'] for champ in all_champions]
+    conn = mysql.connector.connect(**mysql_champion_config)
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT champ_name FROM champion")
+    rows = cursor.fetchall()
+    hero_keys = [row['champ_name'] for row in rows]
+    conn.close()
 
     positions = ['top', 'jungle', 'middle', 'bottom', 'utility']
-    tiers = ['iron','bronze', 'silver', 'gold', 'gold_plus', 'platinum',
-             'platinum_plus', 'emerald', 'emerald_plus', 'diamond', 'diamond_plus']
-    regions = ['kr']  
 
     total = len(hero_keys) * len(positions) * len(tiers) * len(regions)
     count = 0
@@ -184,6 +198,17 @@ if __name__ == '__main__':
                             count += 1
                     except Exception as e:
                         print(f'[false] {hero}-{position}-{tier}-{region} -> {e}')
-                    time.sleep(1.0)  # 限流保护
-
+                    time.sleep(1.0)  # 제한 속도
     print(f'[✔] 완료, 총：{count}/{total}')
+
+
+if __name__ == '__main__':
+    tiers = ['iron','bronze', 'silver', 'gold', 'gold_plus', 
+             'platinum', 'platinum_plus', 'emerald', 
+             'emerald_plus', 'diamond', 'diamond_plus'] 
+    regions = ['kr']
+
+    create_matchup_db(tiers, regions)
+
+
+# %%

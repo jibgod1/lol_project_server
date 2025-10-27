@@ -1,3 +1,4 @@
+#%%
 import json
 import requests
 import sqlite3
@@ -5,6 +6,7 @@ import argparse
 import sqlite3
 import time
 from typing import List, Dict, Any
+import mysql.connector
 
 DEFAULT_REGIONS = ["kr"] 
 def pickban(tier='gold',region='kr'):
@@ -95,41 +97,53 @@ def pickban(tier='gold',region='kr'):
         champ.pop('positionCounters', None)
 
     # 写入数据库
-    conn = sqlite3.connect('pick_ban_data.db')
+    mysql_pick_ban_config = {
+        "host": "3.37.127.128",
+        "user": "lol_local",
+        "password": "!Jib990205", 
+        "database": "match_data",
+        "port": 3306
+    }
+
+    conn = mysql.connector.connect(**mysql_pick_ban_config)
     cur = conn.cursor()
 
+    # 테이블 생성 (MySQL에서는 TEXT/BLOB는 PRIMARY KEY 불가하므로 VARCHAR 사용)
     cur.execute('''
-        CREATE TABLE IF NOT EXISTS pick_ban_data (
-            key TEXT,
-            name TEXT,
-            positionName TEXT,
-            tier TEXT,
-            region TEXT,
-            positionWinRate REAL,
-            positionPickRate REAL,
-            positionBanRate REAL,
-            positionRoleRate REAL,
-            image_url TEXT,
-            PRIMARY KEY (key, positionName, tier, region)
-        )
+    CREATE TABLE IF NOT EXISTS pick_ban_data (
+        champ_key VARCHAR(64),
+        name VARCHAR(100),
+        positionName VARCHAR(50),
+        tier VARCHAR(50),
+        region VARCHAR(20),
+        positionWinRate FLOAT,
+        positionPickRate FLOAT,
+        positionBanRate FLOAT,
+        positionRoleRate FLOAT,
+        image_url TEXT,
+        PRIMARY KEY (champ_key, positionName, tier, region)
+    )
     ''')
 
+    # 데이터 삽입 (MySQL용 플레이스홀더 %s 사용)
+    sql = '''
+    INSERT INTO pick_ban_data (
+        champ_key, name, positionName, tier, region,
+        positionWinRate, positionPickRate, positionBanRate,
+        positionRoleRate, image_url
+    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    ON DUPLICATE KEY UPDATE
+        name = VALUES(name),
+        positionWinRate = VALUES(positionWinRate),
+        positionPickRate = VALUES(positionPickRate),
+        positionBanRate = VALUES(positionBanRate),
+        positionRoleRate = VALUES(positionRoleRate),
+        image_url = VALUES(image_url)
+    '''
+
     for champ in data:
-        cur.execute('''
-            INSERT INTO pick_ban_data (
-                key, name, positionName, tier, region,
-                positionWinRate, positionPickRate, positionBanRate,
-                positionRoleRate, image_url
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(key, positionName, tier, region) DO UPDATE SET
-                name=excluded.name,
-                positionWinRate=excluded.positionWinRate,
-                positionPickRate=excluded.positionPickRate,
-                positionBanRate=excluded.positionBanRate,
-                positionRoleRate=excluded.positionRoleRate,
-                image_url=excluded.image_url
-        ''', (
-            champ['key'],
+        cur.execute(sql, (
+            champ['key'],                  # JSON에서 key 사용
             champ['name'],
             champ.get('positionName'),
             tier,
@@ -145,22 +159,24 @@ def pickban(tier='gold',region='kr'):
     conn.close()
     print(f'[✔] : {tier}-{region}  {len(data)} ')
 
+def create_pick_ban_db(tiers: list, region: str = 'kr', delay: float = 2.0):
 
-if __name__ == '__main__':
-    tiers = ['iron','bronze','silver','gold','gold_plus','platinum',
-             'platinum_plus','emerald','emerald_plus','diamond','diamond_plus']
-    regions = ['kr']
-
-    total = len(tiers) * len(regions)
+    total = len(tiers)
     count = 0
 
     for tier in tiers:
-        for region in regions:
-            try:
-                pickban(tier, region)
-                count += 1
-            except Exception as e:
-                print(f'[❌fals] {tier}-{region} -> {e}')
-            time.sleep(2)
+        try:
+            pickban(tier, region)
+            count += 1
+        except Exception as e:
+            print(f'[❌실패] {tier}-{region} -> {e}')
+        time.sleep(delay)
 
     print(f'[✔] 완료 {count}/{total}')
+
+if __name__ == '__main__':
+    all_tiers = ['iron','bronze','silver','gold','gold_plus','platinum',
+                 'platinum_plus','emerald','emerald_plus','diamond','diamond_plus']
+    
+    create_pick_ban_db(all_tiers, region='kr')
+# %%

@@ -1,10 +1,32 @@
 # %%
 import requests
 import time
-import sqlite3
+import mysql.connector
 import os
 import config  
 import json
+
+mysql_champion_config = {
+    "host": "3.37.127.128",
+    "user": "lol_local",
+    "password": "!Jib990205",
+    "database": "champion_data",
+    "port": 3306
+}
+mysql_item_config = {
+    "host": "3.37.127.128",
+    "user": "lol_local",
+    "password": "!Jib990205",
+    "database": "item_data",
+    "port": 3306
+}
+mysql_match_config = {
+    "host": "3.37.127.128",
+    "user": "lol_local",
+    "password": "!Jib990205",
+    "database": "match_data",
+    "port": 3306
+}
 
 def game_info(match_id, tier, flag):
     api_key = config.API_KEY
@@ -15,8 +37,8 @@ def game_info(match_id, tier, flag):
     url2 = f'https://{region}.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline'
 
     headers = {'X-Riot-Token': api_key}
-    
-    while True:  # 🔹 무한 루프를 사용해 429 에러 발생 시 재시도
+
+    while True:
         response1 = requests.get(url1, headers=headers)
         response2 = requests.get(url2, headers=headers)
         time.sleep(1.6)
@@ -25,42 +47,25 @@ def game_info(match_id, tier, flag):
             match_data = response1.json()
             match_info = response2.json()
 
-           
-            
             if match_data["info"]["gameMode"] == "CLASSIC" or match_data["info"]["queueId"] in ranked_queue_ids:
                 results = info(match_id, match_data, match_info, flag)
                 item_results = item_info(match_data, flag)
-                save_item_to_db(item_results)
-                BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-                DATA_DIR = os.path.join(BASE_DIR, "data")
-                db_path = os.path.join(DATA_DIR, "match_data.db")
-                conn = sqlite3.connect(db_path)  # 🔸 DB 연결
-                cursor = conn.cursor()                   # 🔸 커서 생성
-                for row in results.values():
-                    values = tuple(row.values())  # 딕셔너리 값을 튜플로 변환
-                    cursor.execute(f'''
-                        INSERT OR IGNORE INTO match_id_{tier} VALUES (
-                            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-                        )
-                    ''', values)
                 
-                conn.commit()
-                conn.close()
+                # MySQL에 저장
+                save_match_to_db(results, tier)
+                save_item_to_db(item_results)
                 return
             else:
                 print("랭크게임 혹은 일반게임이 아닙니다")
                 return "NONE"
-        
-        elif response1.status_code == 429 or response2.status_code == 429:  # 🔹 429 오류 발생 시
+
+        elif response1.status_code == 429 or response2.status_code == 429:
             print("429 오류 발생! 10초 후 다시 시도합니다...")
-            time.sleep(10)  # 🔹 10초 대기 후 다시 시도
-        
+            time.sleep(10)
         else:
             print("user_line_winrate.ipynb error")
             print(f"Error: {response1.status_code}, {response2.status_code}")
             return "NONE"
-
-    return "NONE"
 
 
 
@@ -336,17 +341,16 @@ def item_info(match_data, flag):
 
     return results
 
+
 def get_champion_roles(champ_name):
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    DB_PATH = os.path.join(BASE_DIR, "data", "champion_data.db")
-    
-    conn = sqlite3.connect(DB_PATH)
+    conn = mysql.connector.connect(**mysql_champion_config) 
     cursor = conn.cursor()
-    
-    cursor.execute("SELECT champ_tags FROM champion WHERE champ_name = ?", (champ_name,))
+
+    cursor.execute("SELECT champ_tags FROM champion WHERE champ_name = %s", (champ_name,))
     result = cursor.fetchone()
+    cursor.close()
     conn.close()
-    
+
     if result:
         tags = [tag.strip() for tag in result[0].split(",")]
         return tags
@@ -376,34 +380,51 @@ def calculate_total_item_gold(my_items):
     return total_gold
 
 def save_item_to_db(results):
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    DB_PATH = os.path.join(BASE_DIR, "data", "item_data.db")
-
-    conn = sqlite3.connect(DB_PATH)
+    conn = mysql.connector.connect(**mysql_item_config)
     cursor = conn.cursor()
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS item_feedback (
-            my_role TEXT,
+            my_role VARCHAR(50),
             my_items TEXT,
             enemy_roles TEXT,
-            total_gold INTEGER,
-            win INTEGER
-        )
+            total_gold INT,
+            win INT
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """)
+
+    insert_sql = """
+        INSERT INTO item_feedback
+        (my_role, my_items, enemy_roles, total_gold, win)
+        VALUES (%s, %s, %s, %s, %s)
+    """
 
     for pid, data in results.items():
         my_roles_str = ",".join(data["my_roles"])
         my_items_str = ",".join(map(str, data["my_items"]))
         enemy_roles_str = ";".join(["|".join(r) for r in data["enemy_roles"]])
-        cursor.execute("""
-            INSERT INTO item_feedback
-            (my_role, my_items, enemy_roles, total_gold, win)
-            VALUES (?, ?, ?, ?, ?)
-        """, (my_roles_str, my_items_str, enemy_roles_str, data["total_gold"], data["win"]))
+        cursor.execute(insert_sql, (my_roles_str, my_items_str, enemy_roles_str, data["total_gold"], data["win"]))
 
     conn.commit()
+    cursor.close()
     conn.close()
+
+def save_match_to_db(results, tier):
+    conn = mysql.connector.connect(**mysql_match_config)
+    cursor = conn.cursor()
+
+    columns = list(results[1].keys())
+    placeholders = ", ".join(["%s"] * len(columns))
+    insert_sql = f"INSERT IGNORE INTO match_id_{tier} ({', '.join(columns)}) VALUES ({placeholders})"
+
+    for row in results.values():
+        values = tuple(row.values())
+        cursor.execute(insert_sql, values)
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
 # %%
 
 
