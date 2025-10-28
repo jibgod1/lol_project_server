@@ -7,19 +7,20 @@ import time
 import os
 import sqlite3
 import mysql.connector
+from config import PASSWARD
 
 
 mysql_champion_config = {
         "host": "3.37.127.128",
         "user": "lol_local",
-        "password": "!Jib990205",
+        "password": PASSWARD,
         "database": "champion_data",
         "port": 3306
     }
 mysql_matchup_config = {
         "host": "3.37.127.128",
         "user": "lol_local",
-        "password": "!Jib990205",
+        "password": PASSWARD,
         "database": "matchup_data",
         "port": 3306
     }

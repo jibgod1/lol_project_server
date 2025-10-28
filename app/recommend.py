@@ -4,20 +4,21 @@ from typing import Dict, List, Tuple, Optional
 import math
 import json
 import mysql.connector
+from config import PASSWARD
 
 
 # ✅ MySQL 설정
 mysql_pick_ban_config = {
     "host": "3.37.127.128",
     "user": "lol_local",
-    "password": "!Jib990205",
+    "password": PASSWARD,
     "database": "pick_ban_data",
     "port": 3306
 }
 mysql_matchup_config = {
     "host": "3.37.127.128",
     "user": "lol_local",
-    "password": "!Jib990205",
+    "password": PASSWARD,
     "database": "matchup_data",
     "port": 3306
 }

@@ -8,11 +8,12 @@ import torch.nn.functional as F
 from sklearn.model_selection import train_test_split
 import mysql.connector
 from torch.utils.data import TensorDataset, DataLoader
+from config import PASSWARD
 
 mysql_config = {
     "host": "3.37.127.128",
     "user": "lol_local",
-    "password": "!Jib990205",
+    "password": PASSWARD,
     "database": "item_data",
     "port": 3306
 }

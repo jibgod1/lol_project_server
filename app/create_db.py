@@ -1,6 +1,7 @@
 # %% 
 # create_match_db_mysql.py
 import mysql.connector
+from config import PASSWARD
 
 def create_match_db():
     # ------------------------------
@@ -9,7 +10,7 @@ def create_match_db():
     mysql_config = {
         "host": "3.37.127.128",
         "user": "lol_local",
-        "password": "!Jib990205", 
+        "password": PASSWARD, 
         "database": "pick_ban_data",
         "port": 3306
     }

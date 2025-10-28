@@ -5,25 +5,26 @@ import mysql.connector
 import os
 import config  
 import json
+from config import PASSWARD
 
 mysql_champion_config = {
     "host": "3.37.127.128",
     "user": "lol_local",
-    "password": "!Jib990205",
+    "password": PASSWARD,
     "database": "champion_data",
     "port": 3306
 }
 mysql_item_config = {
     "host": "3.37.127.128",
     "user": "lol_local",
-    "password": "!Jib990205",
+    "password": PASSWARD,
     "database": "item_data",
     "port": 3306
 }
 mysql_match_config = {
     "host": "3.37.127.128",
     "user": "lol_local",
-    "password": "!Jib990205",
+    "password": PASSWARD,
     "database": "match_data",
     "port": 3306
 }

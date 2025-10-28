@@ -7,6 +7,7 @@ import sqlite3
 import time
 from typing import List, Dict, Any
 import mysql.connector
+from config import PASSWARD
 
 DEFAULT_REGIONS = ["kr"] 
 def pickban(tier='gold',region='kr'):
@@ -100,7 +101,7 @@ def pickban(tier='gold',region='kr'):
     mysql_pick_ban_config = {
         "host": "3.37.127.128",
         "user": "lol_local",
-        "password": "!Jib990205", 
+        "password": PASSWARD, 
         "database": "match_data",
         "port": 3306
     }

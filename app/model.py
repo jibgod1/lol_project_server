@@ -14,18 +14,19 @@ import json
 import numpy as np
 import statsmodels.api as sm
 import pandas as pd
+from config import PASSWARD
 
 mysql_match_config = {
         "host": "3.37.127.128",
         "user": "lol_local",
-        "password": "!Jib990205", 
+        "password": PASSWARD, 
         "database": "match_data",
         "port": 3306
     }
 mysql_matchup_config = {
         "host": "3.37.127.128",
         "user": "lol_local",
-        "password": "!Jib990205", 
+        "password": PASSWARD, 
         "database": "matchup_data",
         "port": 3306
     }
