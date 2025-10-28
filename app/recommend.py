@@ -124,8 +124,9 @@ def _norm_pick_rate(pr: Optional[float]) -> float:
     return math.log1p(9 * x) / math.log1p(9)
 
 
+# ✅ 챔피언 점수 계산
 def compute_pick_score(hero: str, mastery: int, position: str, tier: str,
-                       meta_conn: Optional[sqlite3.Connection],
+                       meta_conn,
                        weights: Dict[str, float] = DEFAULT_WEIGHTS,
                        max_mastery: int = 11) -> Tuple[float, Dict[str, float], Dict[str, Optional[float]]]:
     wr = pr = br = None
@@ -137,22 +138,20 @@ def compute_pick_score(hero: str, mastery: int, position: str, tier: str,
         "win_rate": (_norm_pct(wr) + 1.0) / 2.0,
         "pick_rate": _norm_pick_rate(pr),
     }
-    score = (weights.get("mastery", 0)*comp["mastery"]
-           + weights.get("win_rate", 0)*comp["win_rate"]
-           + weights.get("pick_rate", 0)*comp["pick_rate"])
+    score = (weights["mastery"] * comp["mastery"] +
+             weights["win_rate"] * comp["win_rate"] +
+             weights["pick_rate"] * comp["pick_rate"])
+
     raw = {"wr": wr, "pr": pr, "br": br}
     return score, comp, raw
 
 
-#  Recommendation 
-def recommend_picks(user: UserInfo,
-                    meta_conn: Optional[sqlite3.Connection],
-                    top_n: int = TOP_N_PICKS):
+# ✅ 추천 챔피언
+def recommend_picks(user: UserInfo, meta_conn, top_n: int = TOP_N_PICKS):
     items = []
     for hero, m in user.champion_mastery.items():
-        # 检查该英雄在该位置是否有数据
         wr, pr, br = _fetch_meta_stats(hero, user.position, user.tier, meta_conn)
-        if wr is None and pr is None: 
+        if wr is None and pr is None:
             continue
 
         s, comp, raw = compute_pick_score(hero, m, user.position, user.tier, meta_conn)
@@ -163,16 +162,16 @@ def recommend_picks(user: UserInfo,
 
 
 
+# ✅ 추천 밴 조합
 def recommend_bans_for_pick(hero: str, user: UserInfo,
-                            matchup_conn: Optional[sqlite3.Connection],
-                            meta_conn: Optional[sqlite3.Connection],
+                            matchup_conn,
+                            meta_conn,
                             k_counters: int = TOP_N_BANS_PER_PICK,
                             k_meta: int = TOP_N_META_BANS) -> Dict[str, List[str]]:
     counters = fetch_counters(hero, user.position, user.tier, matchup_conn)[:k_counters]
     meta_bans = fetch_meta_top_bans(user.position, user.tier, meta_conn, top_k=max(k_meta, 0))
 
-    seen = set()
-    ordered = []
+    seen, ordered = set(), []
     for name in counters + meta_bans:
         n = name.lower()
         if n not in seen and n != hero.lower():
@@ -180,8 +179,8 @@ def recommend_bans_for_pick(hero: str, user: UserInfo,
             ordered.append(n)
 
     return {
-        "counters": [c.lower() for c in counters],
-        "meta": [m.lower() for m in meta_bans],
+        "counters": counters,
+        "meta": meta_bans,
         "final": ordered[:max(k_counters + k_meta, 1)]
     }
 
@@ -225,9 +224,6 @@ def run(user: UserInfo,
         }
 
         # 🔹 결과 출력
-        print("=== 최종 result ===")
-        import json
-        print(json.dumps(result, indent=2, ensure_ascii=False))
 
         return result
 
