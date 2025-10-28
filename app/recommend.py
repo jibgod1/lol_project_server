@@ -194,6 +194,9 @@ def run(user: UserInfo,
     meta_conn = _open_db(mysql_pick_ban_config)
     matchup_conn = _open_db(mysql_matchup_config)
 
+    print(f"meta_conn: {meta_conn}")
+    print(f"matchup_conn: {matchup_conn}")
+
     try:
         picks = recommend_picks(user, meta_conn, top_n=top_n_picks)
         results = []
