@@ -191,6 +191,7 @@ def recommend_bans_for_pick(hero: str, user: UserInfo,
 
 def run(user: UserInfo,
         top_n_picks: int = TOP_N_PICKS) -> Dict:
+    print("=== run() 시작 ===")
     meta_conn = _open_db(mysql_pick_ban_config)
     matchup_conn = _open_db(mysql_matchup_config)
 
@@ -199,8 +200,11 @@ def run(user: UserInfo,
 
     try:
         picks = recommend_picks(user, meta_conn, top_n=top_n_picks)
+        print(f"추천된 picks 수: {len(picks)}")
+        
         results = []
         for hero, score, comp, raw, mastery in picks:
+            print(f"처리중 챔피언: {hero}")
             bans = recommend_bans_for_pick(hero, user, matchup_conn, meta_conn)
             results.append({
                 "hero": hero,
@@ -210,7 +214,8 @@ def run(user: UserInfo,
                 "mastery": mastery,
                 "bans": bans
             })
-        return {
+
+        result = {
             "user": {
                 "tier": user.tier,
                 "position": user.position,
@@ -218,10 +223,21 @@ def run(user: UserInfo,
             },
             "picks": results
         }
-    finally:
-        if meta_conn: meta_conn.close()
-        if matchup_conn: matchup_conn.close()
 
+        # 🔹 결과 출력
+        print("=== 최종 result ===")
+        import json
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+
+        return result
+
+    finally:
+        if meta_conn: 
+            meta_conn.close()
+            print("meta_conn closed")
+        if matchup_conn: 
+            matchup_conn.close()
+            print("matchup_conn closed")
 
 #  Print
 def _pct(v: Optional[float]) -> str:
