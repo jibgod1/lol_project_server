@@ -9,6 +9,8 @@ from pydantic import BaseModel
 from typing import List
 import torch
 from item_model import load_item_model, recommend_items
+from recommend import UserInfo, run
+from typing import Dict
 
 
 
@@ -26,10 +28,29 @@ class ItemFeedbackRequest(BaseModel):
     my_roles: List[str]                
     enemy_roles: List[List[str]]     
 
+class PickBanRequest(BaseModel):
+    tier: str
+    position: str
+    champion_mastery: Dict[str, int]
+
 
 @app.get("/")
 def root():
     return {"msg": "LOL Project API is running 🚀"}
+
+@app.post("/pick_ban")
+def pick_ban(req: PickBanRequest):
+    # 클라이언트 요청 데이터를 UserInfo 객체로 변환
+    userinfo = UserInfo(
+        tier=req.tier.lower(),
+        position=req.position.lower(),
+        champion_mastery={k.lower(): v for k, v in req.champion_mastery.items()}
+    )
+
+    # 기존 run() 호출
+    result = run(userinfo)
+
+    return result
 
 @app.post("/analysis")
 def root(req: AnalysisRequest):
