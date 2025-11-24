@@ -5,7 +5,6 @@ import json
 import requests
 import time
 import os
-import sqlite3
 import mysql.connector
 from config import PASSWARD
 
@@ -173,7 +172,7 @@ def insert_winrate_to_db(hero, position, tier, region, winrate_data):
     finally:
         conn.close()
 
-def create_matchup_db(tiers: list, regions: list):
+def create_matchup_db(tiers: list, region: str):  # regions -> region
     # 챔피언 key 가져오기
     ensure_db()
     conn = mysql.connector.connect(**mysql_champion_config)
@@ -183,23 +182,22 @@ def create_matchup_db(tiers: list, regions: list):
     hero_keys = [row['champ_name'] for row in rows]
     conn.close()
 
-    positions = ['top', 'jungle', 'middle', 'bottom', 'utility']
+    positions = ['top', 'jungle', 'mid', 'adc', 'support']
 
-    total = len(hero_keys) * len(positions) * len(tiers) * len(regions)
+    total = len(hero_keys) * len(positions) * len(tiers)
     count = 0
 
     for hero in hero_keys:
         for position in positions:
             for tier in tiers:
-                for region in regions:
-                    try:
-                        result = matchup(hero, position, tier, region)
-                        if result:
-                            insert_winrate_to_db(hero, position, tier, region, result)
-                            count += 1
-                    except Exception as e:
-                        print(f'[false] {hero}-{position}-{tier}-{region} -> {e}')
-                    time.sleep(1.0)  # 제한 속도
+                try:
+                    result = matchup(hero, position, tier, region)
+                    if result:
+                        insert_winrate_to_db(hero, position, tier, region, result)
+                        count += 1
+                except Exception as e:
+                    print(f'[false] {hero}-{position}-{tier}-{region} -> {e}')
+                time.sleep(1.0)  # 제한 속도
     print(f'[✔] 완료, 총：{count}/{total}')
 
 
@@ -207,9 +205,9 @@ if __name__ == '__main__':
     tiers = ['iron','bronze', 'silver', 'gold', 'gold_plus', 
              'platinum', 'platinum_plus', 'emerald', 
              'emerald_plus', 'diamond', 'diamond_plus'] 
-    regions = ['kr']
+    region = 'kr'
 
-    create_matchup_db(tiers, regions)
+    create_matchup_db(tiers, region)
 
 
 # %%

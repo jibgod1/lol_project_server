@@ -91,7 +91,6 @@ def create_champion_db():
     if not os.path.exists(json_path):
         print(f"❌ JSON 파일이 존재하지 않습니다: {json_path}")
         return
-
     mysql_config = {
         "host": "3.37.127.128",
         "user": "lol_local",
@@ -102,7 +101,6 @@ def create_champion_db():
 
     conn = mysql.connector.connect(**mysql_config)
     cursor = conn.cursor()
-
     # 테이블 생성
     cursor.execute("DROP TABLE IF EXISTS `champion`;")
     cursor.execute("""
@@ -114,7 +112,6 @@ def create_champion_db():
         PRIMARY KEY (champ_key)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """)
-
     # JSON 로드
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -145,8 +142,7 @@ def create_champion_db():
 
 
 
-
-# # %%migrate_sqlite_to_mysql_batch_fixed.py
+# %%migrate_sqlite_to_mysql_batch_fixed.py
 
 # import sqlite3
 # import mysql.connector

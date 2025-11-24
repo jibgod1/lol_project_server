@@ -12,7 +12,6 @@ import joblib
 import os
 import json
 import numpy as np
-import statsmodels.api as sm
 import pandas as pd
 from config import PASSWARD
 
@@ -35,96 +34,96 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 
 
+def create_winrate_model():
+    # 1. 데이터 불러오기
+    tiers = ["IRON","BRONZE","SILVER","GOLD","PLATINUM","EMERALD","DIAMOND"]
+    #tiers=["GOLD"]
+    lanes = ["TOP","JUNGLE","MIDDLE","BOTTOM","UTILITY"]
+    tier_accuracies = {}
+    for tier in tiers:
+        line_accuracies = {}
+        for lane in lanes:
+            conn1 = mysql.connector.connect(**mysql_match_config)
+            df = pd.read_sql(f"SELECT * FROM match_id_{tier} WHERE teamposition = '{lane}'", conn1)
+            conn1.close()
+            
+            conn2 = mysql.connector.connect(**mysql_matchup_config)
+            winrate_df = pd.read_sql(
+                f"SELECT * FROM matchup_winrate WHERE tier = '{tier.lower()}' AND position = '{lane.lower()}'", 
+                conn2
+            )
+            conn2.close()
 
-# 1. 데이터 불러오기
-tiers = ["IRON","BRONZE","SILVER","GOLD","PLATINUM","EMERALD","DIAMOND"]
-#tiers=["GOLD"]
-lanes = ["TOP","JUNGLE","MIDDLE","BOTTOM","UTILITY"]
-tier_accuracies = {}
-for tier in tiers:
-    line_accuracies = {}
-    for lane in lanes:
-        conn1 = mysql.connector.connect(**mysql_match_config)
-        df = pd.read_sql(f"SELECT * FROM match_id_{tier} WHERE teamposition = '{lane}'", conn1)
-        conn1.close()
-        
-        conn2 = mysql.connector.connect(**mysql_matchup_config)
-        winrate_df = pd.read_sql(
-            f"SELECT * FROM matchup_winrate WHERE tier = '{tier.lower()}' AND position = '{lane.lower()}'", 
-            conn2
-        )
-        conn2.close()
+            winrate_df["hero"] = winrate_df["hero"].str.lower()
+            winrate_df["opponent"] = winrate_df["opponent"].str.lower()
+            
+            winrate_df = winrate_df.rename(columns={"hero": "my_champion", "opponent": "enemy_champion"})
+            
+            df["my_champion"] = df["my_champion"].str.lower()
+            df["enemy_champion"] = df["enemy_champion"].str.lower()
+            
+            
+            df = df.merge(
+                winrate_df[["my_champion", "enemy_champion", "win_rate"]],
+                on=["my_champion", "enemy_champion"],
+                how="left"
+            )
+            df["win_rate"] = df["win_rate"].fillna(50)
+            
+            
+            # 2. 데이터 분류
+            #df.drop(columns=["dragon_participation", "dragon_deaths"], inplace=True)
+            #df.drop(columns=["elder_dragon_participation", "elder_dragon_deaths"], inplace=True)
+            #df.drop(columns=["baron_nashor_participation", "baron_nashor_deaths"], inplace=True)
+            #df.drop(columns=["horde_participation", "horde_deaths"], inplace=True)
+            #df.drop(columns=["riftherald_participation", "riftherald_deaths"], inplace=True)
+            df.drop(columns=["team_Dragon_kills", "team_Horde_kills", "team_riftHerald_kills", "team_Baron_kills", "team_ElderDragon_kills", "team_Atakhan_kills"], inplace=True)
+            df.drop(columns=["kills", "deaths", "assists"], inplace=True)
+            df.drop(columns=["early_kills", "early_deaths", "early_assists", "lane_cs"], inplace=True)
+            df.drop(columns=["kill_participation"], inplace=True)
+            df.drop(columns=["turret_damage"], inplace=True)
+            
+            # 3. 특성(X)와 타겟(y) 분리
+            X = df.drop(columns=["win", "match_id", "teamposition", "my_champion", "enemy_champion"])
+            y = df["win"]
+            
+            # 4. train/test split
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+            
+            # 5. 스케일링
+            scaler = RobustScaler()
+            X_train_scaled = scaler.fit_transform(X_train)
+            X_test_scaled = scaler.transform(X_test)
+            
+            # 6. 모델 학습
+            model = LogisticRegression(max_iter=100)
+            model.fit(X_train_scaled, y_train)
+            
+            # 7. 평가
+            y_pred = model.predict(X_test_scaled)
+            print(f"[{lane}] 라인 기준 정확도: {accuracy_score(y_test, y_pred):.4f}")
 
-        winrate_df["hero"] = winrate_df["hero"].str.lower()
-        winrate_df["opponent"] = winrate_df["opponent"].str.lower()
+            line_accuracies[lane] = round(accuracy_score(y_test, y_pred) * 100, 2)
+            
+            # 8. 특성 중요도 확인
+            importance = model.coef_[0]
+            for name, val in zip(X.columns, importance):
+                print(f"{name:<25}: {val:.4f}")
+            
+            # 9. 저장
+            joblib.dump(model, os.path.join(DATA_DIR, f"model_{lane.lower()}_{tier}.pkl"))
+            joblib.dump(scaler, os.path.join(DATA_DIR, f"scaler_{lane.lower()}_{tier}.pkl"))
         
-        winrate_df = winrate_df.rename(columns={"hero": "my_champion", "opponent": "enemy_champion"})
-        
-        df["my_champion"] = df["my_champion"].str.lower()
-        df["enemy_champion"] = df["enemy_champion"].str.lower()
-        
-        
-        df = df.merge(
-            winrate_df[["my_champion", "enemy_champion", "win_rate"]],
-            on=["my_champion", "enemy_champion"],
-            how="left"
-        )
-        df["win_rate"] = df["win_rate"].fillna(50)
-        
-        
-        # 2. 데이터 분류
-        #df.drop(columns=["dragon_participation", "dragon_deaths"], inplace=True)
-        #df.drop(columns=["elder_dragon_participation", "elder_dragon_deaths"], inplace=True)
-        #df.drop(columns=["baron_nashor_participation", "baron_nashor_deaths"], inplace=True)
-        #df.drop(columns=["horde_participation", "horde_deaths"], inplace=True)
-        #df.drop(columns=["riftherald_participation", "riftherald_deaths"], inplace=True)
-        df.drop(columns=["team_Dragon_kills", "team_Horde_kills", "team_riftHerald_kills", "team_Baron_kills", "team_ElderDragon_kills", "team_Atakhan_kills"], inplace=True)
-        df.drop(columns=["kills", "deaths", "assists"], inplace=True)
-        df.drop(columns=["early_kills", "early_deaths", "early_assists", "lane_cs"], inplace=True)
-        df.drop(columns=["kill_participation"], inplace=True)
-        df.drop(columns=["turret_damage"], inplace=True)
-        
-        # 3. 특성(X)와 타겟(y) 분리
-        X = df.drop(columns=["win", "match_id", "teamposition", "my_champion", "enemy_champion"])
-        y = df["win"]
-        
-        # 4. train/test split
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-        
-        # 5. 스케일링
-        scaler = RobustScaler()
-        X_train_scaled = scaler.fit_transform(X_train)
-        X_test_scaled = scaler.transform(X_test)
-        
-        # 6. 모델 학습
-        model = LogisticRegression(max_iter=100)
-        model.fit(X_train_scaled, y_train)
-        
-        # 7. 평가
-        y_pred = model.predict(X_test_scaled)
-        print(f"[{lane}] 라인 기준 정확도: {accuracy_score(y_test, y_pred):.4f}")
+        avg_acc = np.mean(list(line_accuracies.values()))
+        tier_accuracies[tier] = {
+            "lane_accuracies": line_accuracies,
+            "avg_accuracy": round(avg_acc, 2)
+        }
+    json_path = os.path.join(DATA_DIR, "model_accuracy_by_tier.json")
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(tier_accuracies, f, indent=4, ensure_ascii=False)
 
-        line_accuracies[lane] = round(accuracy_score(y_test, y_pred) * 100, 2)
-        
-        # 8. 특성 중요도 확인
-        importance = model.coef_[0]
-        for name, val in zip(X.columns, importance):
-            print(f"{name:<25}: {val:.4f}")
-        
-        # 9. 저장
-        joblib.dump(model, os.path.join(DATA_DIR, f"model_{lane.lower()}_{tier}.pkl"))
-        joblib.dump(scaler, os.path.join(DATA_DIR, f"scaler_{lane.lower()}_{tier}.pkl"))
-    
-    avg_acc = np.mean(list(line_accuracies.values()))
-    tier_accuracies[tier] = {
-        "lane_accuracies": line_accuracies,
-        "avg_accuracy": round(avg_acc, 2)
-    }
-json_path = os.path.join(DATA_DIR, "model_accuracy_by_tier.json")
-with open(json_path, "w", encoding="utf-8") as f:
-    json.dump(tier_accuracies, f, indent=4, ensure_ascii=False)
-
-print(f"\n✅ 티어별 모델 정확도 저장 완료: {json_path}")
+    print(f"\n✅ 티어별 모델 정확도 저장 완료: {json_path}")
 
 # %%
 

@@ -1,5 +1,4 @@
 # %% item_mlp_train_interaction.py
-import sqlite3
 import pandas as pd
 import os, json
 import torch

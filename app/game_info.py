@@ -395,9 +395,9 @@ def save_item_to_db(results):
     """)
 
     insert_sql = """
-        INSERT INTO item_feedback
+        INSERT IGNORE INTO item_feedback
         (my_role, my_items, enemy_roles, total_gold, win)
-        VALUES (%s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s);
     """
 
     for pid, data in results.items():
@@ -414,7 +414,8 @@ def save_match_to_db(results, tier):
     conn = mysql.connector.connect(**mysql_match_config)
     cursor = conn.cursor()
 
-    columns = list(results[1].keys())
+    first_key = next(iter(results))
+    columns = list(results[first_key].keys())
     placeholders = ", ".join(["%s"] * len(columns))
     insert_sql = f"INSERT IGNORE INTO match_id_{tier} ({', '.join(columns)}) VALUES ({placeholders})"
 
